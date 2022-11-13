@@ -131,7 +131,7 @@ func main() {
 				vitocal.PumpSpeed = int(value[7])
 				vitocal.Hours = int(value[8])
 				states = fmt.Sprintf("%04x %04x %04x", value[0], value[1], value[2])
-				for i := 4; i < len(value)-4; i++ {
+				for i := 3; i < len(value)-2; i++ {
 					states = fmt.Sprintf("%s %5d ", states, value[i])
 				}
 				states = fmt.Sprintf("%s %04x %04x", states, value[9], value[10])
