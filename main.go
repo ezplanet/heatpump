@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"heatpump/base"
 	"heatpump/domain"
 	"heatpump/mqtt"
 	"io"
@@ -13,19 +14,30 @@ import (
 )
 
 const (
+	MODBUS_READ  uint8 = 3
 	ERRORS       uint8 = 8
 	TEMPERATURES uint8 = 4
 	STATES       uint8 = 2
 	MACHINE      uint8 = 1
 	COMPLETE     uint8 = 15
 
-	HEAT byte = 0x40
-	COOL byte = 0x80
+	OFF     byte = 0x00
+	ON      byte = 0x01
+	STANDBY byte = 0x02
+	COMPREQ byte = 0x10
 
-	OFF     uint8 = 0
-	ON      uint8 = 1
-	STANDBY uint8 = 0x02
-	COMPREQ uint8 = 0x10
+	//STATUS byte 4
+	VITOCAL_OFF  byte = 0x00
+	VITOCAL_ON   byte = 0x01
+	VITOCAL_AUTO byte = 0x02
+
+	// STATUS byte 7
+	HEAT        byte = 0x40
+	COOL        byte = 0x80
+	COOL_MANUAL byte = 0xc0
+
+	// STATUS json
+
 )
 
 func main() {
@@ -53,9 +65,9 @@ func main() {
 	}
 	fmt.Println()
 
-	c, err := net.Dial("tcp", "heatpump.ezplanet.org:502")
+	c, err := net.Dial("tcp", base.VitocalModbusTcp)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Error %s trying to connect to %s\n", err, base.VitocalModbusTcp)
 		return
 	}
 	defer c.Close()
@@ -78,7 +90,8 @@ func main() {
 		}
 
 		// Filter by known responses and CRC CHECK
-		if size > 2 && int(buf[2]) == (size-5) {
+		// If the third byte (buf[2]) is equal record length less 5 then this is likely a response
+		if size > 2 && int(buf[2]) == (size-5) && int(buf[0]) == base.VitocalModbusAddr && uint8(buf[1]) == MODBUS_READ {
 			checksum := crc16(buf, size)
 			if checksum[0] != buf[size-2] || checksum[1] != buf[size-1] {
 				fmt.Println("CRC ERROR")
@@ -119,6 +132,14 @@ func main() {
 					vitocal.CompressorRequired = true
 				} else {
 					vitocal.CompressorRequired = false
+				}
+				switch buf[4] {
+				case VITOCAL_OFF:
+					vitocal.ControlMode = domain.CONTROL_MODE_OFF
+				case VITOCAL_ON:
+					vitocal.ControlMode = domain.CONTROL_MODE_ON
+				case VITOCAL_AUTO:
+					vitocal.ControlMode = domain.CONTROL_MODE_AUTO
 				}
 				switch buf[7] {
 				case HEAT:

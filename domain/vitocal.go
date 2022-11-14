@@ -6,6 +6,10 @@ import (
 )
 
 const (
+	CONTROL_MODE_OFF  int = 0
+	CONTROL_MODE_ON   int = 1
+	CONTROL_MODE_AUTO int = 2
+
 	OFF       int = 0
 	ON        int = 1
 	STARTING  int = 2
@@ -15,6 +19,7 @@ const (
 
 type Vitocal struct {
 	Timestamp          time.Time            `json:"timestamp"`
+	ControlMode        int                  `json:"control_mode"`
 	Status             int                  `json:"status"`
 	Mode               int                  `json:"mode"`
 	CompressorRequired bool                 `json:"compressor_required"`
