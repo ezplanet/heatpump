@@ -129,11 +129,12 @@ func main() {
 				vitocal.FanSpeed = int(value[5])
 				vitocal.CompressorHz = int(value[6])
 				vitocal.PumpSpeed = int(value[7])
+				vitocal.Hours = int(value[8])
 				states = fmt.Sprintf("%04x %04x %04x", value[0], value[1], value[2])
-				for i := 3; i < len(value)-3; i++ {
+				for i := 3; i < len(value)-2; i++ {
 					states = fmt.Sprintf("%s %5d ", states, value[i])
 				}
-				states = fmt.Sprintf("%s %04x %04x %04x", states, value[8], value[9], value[10])
+				states = fmt.Sprintf("%s %04x %04x", states, value[9], value[10])
 				template |= STATES
 			}
 			if size == 11 && buf[2] == 6 && (template&MACHINE) == 0 {
@@ -151,7 +152,7 @@ func main() {
 						vitocal.CompressorStatus = domain.ON
 					}
 				}
-				if value[2] == 0x601 {
+				if value[2] == 0x601 || value[2] == 0x8601 {
 					vitocal.PumpStatus = domain.ON
 				} else {
 					vitocal.PumpStatus = domain.OFF

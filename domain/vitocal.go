@@ -26,5 +26,6 @@ type Vitocal struct {
 	Temperatures       vitocal.Temperatures `json:"temperatures"`
 	PressureHigh       int                  `json:"pressure_high"`
 	PressureLow        int                  `json:"pressure_low"`
+	Hours              int                  `json:"hours"`
 	Errors             vitocal.Errors       `json:"errors"`
 }
