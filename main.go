@@ -10,6 +10,8 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
+	"os/exec"
 	"time"
 )
 
@@ -36,8 +38,19 @@ const (
 	COOL        byte = 0x80
 	COOL_MANUAL byte = 0xc0
 
-	// STATUS json
+	// BASE
+	BASE_SHM              string = "/dev/shm/"
+	VITOCAL_POWERED       string = "VitocalPowered"
+	VITOCAL_PUMP_ON       string = "VitocalPumpOn"
+	VITOCAL_STATUS_ON     string = "VitocalStatusOn"
+	VITOCAL_COMPRESSOR_ON string = "VitocalCompressorOn"
+)
 
+var (
+	vitocalPowered    uint8 = 0xFF
+	vitocalPump       uint8 = 0xFF
+	vitocalStatus     uint8 = 0xFF
+	vitocalCompressor uint8 = 0xFF
 )
 
 func main() {
@@ -81,13 +94,34 @@ func main() {
 	var vitocal domain.Vitocal
 
 	for {
+		c.SetReadDeadline(time.Now().Add(15 * time.Second))
 		size, err := c.Read(buf)
 		if err != nil {
+			// If we cannot read the data stream then we assume that the heatpump is not powered
+			if os.IsTimeout(err) {
+				//fmt.Printf("Timeout: %s\n", err)
+				if vitocalPowered >= 1 {
+					cmd := exec.Command("/bin/rm", "-f", BASE_SHM+VITOCAL_POWERED,
+						BASE_SHM+VITOCAL_STATUS_ON, BASE_SHM+VITOCAL_PUMP_ON, BASE_SHM+VITOCAL_COMPRESSOR_ON)
+					err := cmd.Run()
+					if err != nil {
+						fmt.Printf("Error removing vitocal state files: %s\n", err)
+					} else {
+						vitocalPowered = OFF
+						vitocalStatus = OFF
+						vitocalCompressor = OFF
+						vitocalPump = OFF
+					}
+				}
+				continue
+			}
 			if err != io.EOF {
-				fmt.Println("read error", err)
+				fmt.Println("Error reading MODBUS stream", err)
 			}
 			break
 		}
+		// We can read the data stream therefore the heatpump is powered
+		vitocalPowered = setVitocalStateOn(vitocalPowered, VITOCAL_POWERED)
 
 		// Filter by known responses and CRC CHECK
 		// If the third byte (buf[2]) is equal record length less 5 then this is likely a response
@@ -125,13 +159,17 @@ func main() {
 				// if bit 2 = 0 standby otherwise on
 				if buf[3]&STANDBY == 0 {
 					vitocal.Status = domain.ON
+					vitocalStatus = setVitocalStateOn(vitocalStatus, VITOCAL_STATUS_ON)
 				} else {
 					vitocal.Status = domain.OFF
+					vitocalStatus = setVitocalStateOff(vitocalStatus, VITOCAL_STATUS_ON)
 				}
 				if buf[3]&COMPREQ == COMPREQ {
 					vitocal.CompressorRequired = true
+					vitocalCompressor = setVitocalStateOn(vitocalCompressor, VITOCAL_COMPRESSOR_ON)
 				} else {
 					vitocal.CompressorRequired = false
+					vitocalCompressor = setVitocalStateOff(vitocalCompressor, VITOCAL_COMPRESSOR_ON)
 				}
 				switch buf[4] {
 				case VITOCAL_OFF:
@@ -175,8 +213,10 @@ func main() {
 				}
 				if value[2] == 0x601 || value[2] == 0x8601 {
 					vitocal.PumpStatus = domain.ON
+					vitocalPump = setVitocalStateOn(vitocalPump, VITOCAL_PUMP_ON)
 				} else {
 					vitocal.PumpStatus = domain.OFF
+					vitocalPump = setVitocalStateOff(vitocalPump, VITOCAL_PUMP_ON)
 				}
 				for i := 0; i < len(value); i++ {
 					machine = fmt.Sprintf("%s %04x", machine, value[i])
@@ -223,6 +263,35 @@ func main() {
 			temperatures = ""
 			errors = ""
 		}
+	}
+}
+
+func setVitocalStateOn(state uint8, file string) uint8 {
+	if state == OFF || state == 0xFF {
+		_, err := os.Create(BASE_SHM + file)
+		if err != nil {
+			fmt.Println("Error creating file: ", BASE_SHM+file)
+			return state
+		} else {
+			return ON
+		}
+	} else {
+		return state
+	}
+}
+
+func setVitocalStateOff(state uint8, file string) uint8 {
+	if state == ON || state == 0xFF {
+		cmd := exec.Command("/bin/rm", "-f", BASE_SHM+file)
+		err := cmd.Run()
+		if err != nil {
+			fmt.Printf("Error removing vitocal state file %s: %s\n", file, err)
+			return state
+		} else {
+			return OFF
+		}
+	} else {
+		return state
 	}
 }
 

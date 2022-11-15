@@ -20,7 +20,7 @@ A Vitocal 100A response record looks as follows:
 | AA FF SZ VVVV1 VVVV2 VVVx CKSM |
 +--------------------------------+
 AA = Modbus Address, 1 Byte (default = 1)
-FF = Modbus Funcition, 1 Byte (read registers = 3)
+FF = Modbus Function, 1 Byte (read registers = 3)
 SZ = Data registers size in bytes (1 register = 2 bytes), 1 Byte
 VVV1 = Register 1
 VVV2 = Register 2
@@ -40,11 +40,14 @@ The data payload size for each type is its size less 5 bytes (1 address, 1 funct
 Data payload is (27-5)/2 = 11 * 2 byte registers
 ```
 BYTE   CONTENT
- 0     
- 1
- 2
+ 0     Target address
+ 1     Modbus Function (3 = read registers) 
+ 2     Data registers size (registers are 2 bytes)
  3     Status: 3 = OFF
  4     Control Mode: 0 = OFF; 1 = ON; 2 = REMOTE/AUTO
+ 5
+ 6
+ 7     Mode heat/cool (heat - 0x40, cool = 0x80)
 
 ```
 
