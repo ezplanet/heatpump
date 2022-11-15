@@ -1,7 +1,6 @@
 package base
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -28,8 +27,6 @@ func init() {
 	if err != nil {
 		log.Print(err)
 	}
-
-	fmt.Println("Initializing parameters")
 
 	if len(os.Getenv(vitocalModbusAddrKey)) == 0 {
 		VitocalModbusAddr = vitocalModbusAddrDefault
