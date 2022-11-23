@@ -29,9 +29,9 @@ const (
 	COMPREQ byte = 0x10
 
 	//STATUS byte 4
-	VITOCAL_OFF  byte = 0x00
-	VITOCAL_ON   byte = 0x01
-	VITOCAL_AUTO byte = 0x02
+	VITOCAL_OFF       byte = 0x00
+	VITOCAL_AUTO_COOL byte = 0x01
+	VITOCAL_AUTO_HEAT byte = 0x02
 
 	// STATUS byte 7
 	HEAT        byte = 0x40
@@ -92,6 +92,7 @@ func main() {
 	var machine string
 	var errors string
 	var vitocal domain.Vitocal
+	var errorCount int = 0
 
 	for {
 		c.SetReadDeadline(time.Now().Add(15 * time.Second))
@@ -117,6 +118,17 @@ func main() {
 			}
 			if err != io.EOF {
 				fmt.Println("Error reading MODBUS stream", err)
+				time.Sleep(60 * time.Second)
+				c, err = net.Dial("tcp", base.VitocalModbusTcp)
+				if err != nil {
+					errorCount++
+					fmt.Printf("Error %s trying to connect to %s\n", err, base.VitocalModbusTcp)
+				}
+				if errorCount > 60 {
+					break
+				} else {
+					continue
+				}
 			}
 			break
 		}
@@ -171,13 +183,14 @@ func main() {
 					vitocal.CompressorRequired = false
 					vitocalCompressor = setVitocalStateOff(vitocalCompressor, VITOCAL_COMPRESSOR_ON)
 				}
+				// ToDo CONTROL_MODE_HEAT and CONTROL_MODE_COOL have same value, need to manage difference in app
 				switch buf[4] {
 				case VITOCAL_OFF:
 					vitocal.ControlMode = domain.CONTROL_MODE_OFF
-				case VITOCAL_ON:
-					vitocal.ControlMode = domain.CONTROL_MODE_ON
-				case VITOCAL_AUTO:
-					vitocal.ControlMode = domain.CONTROL_MODE_AUTO
+				case VITOCAL_AUTO_COOL:
+					vitocal.ControlMode = domain.CONTROL_MODE_COOL
+				case VITOCAL_AUTO_HEAT:
+					vitocal.ControlMode = domain.CONTROL_MODE_HEAT
 				}
 				switch buf[7] {
 				case HEAT:

@@ -7,8 +7,8 @@ import (
 
 const (
 	CONTROL_MODE_OFF  int = 0
-	CONTROL_MODE_ON   int = 1
-	CONTROL_MODE_AUTO int = 2
+	CONTROL_MODE_COOL int = 2
+	CONTROL_MODE_HEAT int = 2
 
 	OFF       int = 0
 	ON        int = 1
