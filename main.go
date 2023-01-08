@@ -28,6 +28,13 @@ const (
 	STANDBY byte = 0x02
 	COMPREQ byte = 0x10
 
+	//MACHINE byte 2
+	CIRCULATION_PUMP_ON byte = 0x40
+
+	//MACHINE byte 7 and 8
+	COMPRESSOR_ACTIVE       uint16 = 0x8000
+	CIRCULATION_PUMP_ACTIVE uint16 = 0x0601
+
 	//STATUS byte 4
 	VITOCAL_OFF       byte = 0x00
 	VITOCAL_AUTO_COOL byte = 0x01
@@ -224,7 +231,7 @@ func main() {
 						vitocal.CompressorStatus = domain.ON
 					}
 				}
-				if value[2] == 0x601 || value[2] == 0x8601 {
+				if value[2]&CIRCULATION_PUMP_ACTIVE == CIRCULATION_PUMP_ACTIVE {
 					vitocal.PumpStatus = domain.ON
 					vitocalPump = setVitocalStateOn(vitocalPump, VITOCAL_PUMP_ON)
 				} else {
