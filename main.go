@@ -28,10 +28,12 @@ const (
 	STANDBY byte = 0x02
 	COMPREQ byte = 0x10
 
-	//MACHINE byte 2
+	//MACHINE
+	// byte 1
+	COMPRESSOR_OIL_HEATER = 0x09
+	// byte 2
 	CIRCULATION_PUMP_ON byte = 0x40
-
-	//MACHINE byte 7 and 8
+	// byte 7 and 8
 	COMPRESSOR_ACTIVE       uint16 = 0x8000
 	CIRCULATION_PUMP_ACTIVE uint16 = 0x0601
 

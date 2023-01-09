@@ -26,11 +26,29 @@ Record Size = 11 - Values Size: 6
  |  |  |  +-- Comp. status  +--+--- Checksum (2 bytes inverted)
  |  |  |  |                 |  | 
  0  1  2  3  4  5  6  7  8  9 10
-01 03 06              |  |
-                      +--+--- Circulation Pump + Compressor           
+01 03 06     |        |  |
+             |        +--+--- Circulation Pump + Compressor
+             +--- Circulation Pump + Compressor status           
 ```
-Compressor status: 0 = OFF; 1 = RUNNING
-
+Compressor status: 0x00 = OFF; 0x01 = RUNNING; 0x10 = ALWAYS; 0x90 OIL HEATER ON
+Byte 3 bitmap:
+```
+X X X X X X X X
+| |           |      
+| |           +- Compressor ON 
+| |
+| +- Oil heater ON
++- Always 1
+```
+Circulation Pump + Compressor status: 0x40 = Circulation Pump ON; 0x04 Compressor running; ??? = 0x08
+Byte 4 bitmap:
+```
+X X X X X X X X
+  |     | |
+  |     | +- Compressor running
+  |     +- ON when running sometimes. What is it?  
+  +- Circulation Pump ON
+```
 Circulation Pump: 0x0000 = OFF; 0x0601 = ON; 
 
 Compressor: 0x0000 = OFF; 0x8000 = ON
