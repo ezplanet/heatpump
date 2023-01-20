@@ -16,17 +16,17 @@ import (
 )
 
 const (
-	MODBUS_READ  uint8 = 3
-	ERRORS       uint8 = 8
-	TEMPERATURES uint8 = 4
-	STATES       uint8 = 2
-	MACHINE      uint8 = 1
-	COMPLETE     uint8 = 15
+	MODBUS_READ uint8 = 0x03
+	//UNIDENTIFIED uint8 = 0x10
+	ERRORS       uint8 = 0x08
+	TEMPERATURES uint8 = 0x04
+	STATES       uint8 = 0x02
+	MACHINE      uint8 = 0x01
+	COMPLETE     uint8 = 0x0F
+	//COMPLETE     uint8 = 0x1F
 
-	OFF     byte = 0x00
-	ON      byte = 0x01
-	STANDBY byte = 0x02
-	COMPREQ byte = 0x10
+	OFF byte = 0x00
+	ON  byte = 0x01
 
 	//MACHINE
 	// byte 1
@@ -37,12 +37,19 @@ const (
 	COMPRESSOR_ACTIVE       uint16 = 0x8000
 	CIRCULATION_PUMP_ACTIVE uint16 = 0x0601
 
-	//STATUS byte 4
+	//STATUS
+	// byte 3
+	STATUS_STANDBY             byte = 0x02
+	STATUS_COMPRESSOR_REQUIRED byte = 0x10
+	STATUS_DEFROST_STARTING    byte = 0x30
+	STATUS_DEFROST_ACTIVE      byte = 0x50
+
+	// byte 4
 	VITOCAL_OFF       byte = 0x00
 	VITOCAL_AUTO_COOL byte = 0x01
 	VITOCAL_AUTO_HEAT byte = 0x02
 
-	// STATUS byte 7
+	// byte 7
 	HEAT        byte = 0x40
 	COOL        byte = 0x80
 	COOL_MANUAL byte = 0xc0
@@ -100,6 +107,8 @@ func main() {
 	var states string
 	var machine string
 	var errors string
+	//var unidentified string
+	//var temp_unidentified string
 	var vitocal domain.Vitocal
 	var errorCount int = 0
 
@@ -156,6 +165,7 @@ func main() {
 
 			//fmt.Println(size, buf[2], checksum, buf[size-2], buf[size-1], buf)
 
+			// TEMPERATURES - Address 0x018f
 			if size == 105 && buf[2] == 100 && (template&TEMPERATURES) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
@@ -172,25 +182,41 @@ func main() {
 				temperatures = fmt.Sprintf("Temp: in=%.1f out=%.1f ext=%.1f comp=%.1f - Press: high=%d low=%d",
 					temperatureIn, temperatureOut, temperatureExt, scaricoComp,
 					value[7], value[15])
+
+				//temp_unidentified = ""
+				//for i := 0; i < len(value)-2; i++ {
+				//	temp_unidentified = fmt.Sprintf("%s %04x ", temp_unidentified, value[i])
+				//}
 				template |= TEMPERATURES
 			}
+
+			// STATES - Address 0x1c2e - Size 11
 			if size == 27 && buf[2] == 22 && (template&STATES) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
 				// if bit 2 = 0 standby otherwise on
-				if buf[3]&STANDBY == 0 {
+				if buf[3]&STATUS_STANDBY == 0 {
 					vitocal.Status = domain.ON
 					vitocalStatus = setVitocalStateOn(vitocalStatus, VITOCAL_STATUS_ON)
 				} else {
 					vitocal.Status = domain.OFF
 					vitocalStatus = setVitocalStateOff(vitocalStatus, VITOCAL_STATUS_ON)
 				}
-				if buf[3]&COMPREQ == COMPREQ {
+				if buf[3]&STATUS_COMPRESSOR_REQUIRED == STATUS_COMPRESSOR_REQUIRED {
 					vitocal.CompressorRequired = true
 					vitocalCompressor = setVitocalStateOn(vitocalCompressor, VITOCAL_COMPRESSOR_ON)
 				} else {
 					vitocal.CompressorRequired = false
 					vitocalCompressor = setVitocalStateOff(vitocalCompressor, VITOCAL_COMPRESSOR_ON)
+				}
+
+				// DEFROST
+				if buf[3]&STATUS_DEFROST_STARTING == STATUS_DEFROST_STARTING {
+					vitocal.Defrost = domain.DEFROST_STARTING
+				} else if buf[3]&STATUS_DEFROST_ACTIVE == STATUS_DEFROST_ACTIVE {
+					vitocal.Defrost = domain.DEFROST_ACTIVE
+				} else {
+					vitocal.Defrost = domain.DEFROST_INACTIVE
 				}
 				// ToDo CONTROL_MODE_HEAT and CONTROL_MODE_COOL have same value, need to manage difference in app
 				switch buf[4] {
@@ -218,6 +244,8 @@ func main() {
 				states = fmt.Sprintf("%s %04x %04x", states, value[9], value[10])
 				template |= STATES
 			}
+
+			// MACHINE - Address 0x01e0 - Size  3
 			if size == 11 && buf[2] == 6 && (template&MACHINE) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
@@ -233,6 +261,11 @@ func main() {
 						vitocal.CompressorStatus = domain.ON
 					}
 				}
+				if buf[3]&COMPRESSOR_OIL_HEATER == COMPRESSOR_OIL_HEATER {
+					vitocal.OilHeater = domain.ON
+				} else {
+					vitocal.OilHeater = domain.OFF
+				}
 				if value[2]&CIRCULATION_PUMP_ACTIVE == CIRCULATION_PUMP_ACTIVE {
 					vitocal.PumpStatus = domain.ON
 					vitocalPump = setVitocalStateOn(vitocalPump, VITOCAL_PUMP_ON)
@@ -245,6 +278,8 @@ func main() {
 				}
 				template |= MACHINE
 			}
+
+			// ERRORS - Address 0x03ca - Size  5
 			if size == 15 && buf[2] == 10 && (template&ERRORS) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
@@ -258,6 +293,12 @@ func main() {
 				vitocal.Errors.Error5 = value[4]
 				template |= ERRORS
 			}
+
+			// Address 0xc288 - Size 1
+			//if size == 7 && buf[2] == 2 && (template&UNIDENTIFIED) == 0 {
+			//	unidentified = fmt.Sprintf("%02x %02x", buf[3], buf[4])
+			//	template |= UNIDENTIFIED
+			//}
 		}
 
 		vitocal.Timestamp = time.Now()
@@ -272,6 +313,7 @@ func main() {
 				// Throttle down to 1 message every minute when the heat pump is in STAND BY
 				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON || vitocal.Timestamp.Sub(lastTime).Seconds() > 60 {
 					log.Printf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
+					//fmt.Printf("%s  %s - %s\n", vitocal.Timestamp.Format("2006/02/01 15:04:05"), unidentified, temp_unidentified)
 					//fmt.Printf("%s\n", string(prettyJSON))
 					mqtt.Publish(mqtt.VitocalTopic, true, string(linearJSON))
 					lastTime = vitocal.Timestamp
