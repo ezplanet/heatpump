@@ -17,7 +17,7 @@ const (
 	MODE_COOL        int = 2
 	DEFROST_INACTIVE int = 0
 	DEFROST_STARTING int = 1
-	DEFROST_ACTIVE   int = 3
+	DEFROST_ACTIVE   int = 2
 )
 
 type Vitocal struct {
