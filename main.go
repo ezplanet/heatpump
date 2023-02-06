@@ -30,7 +30,7 @@ const (
 
 	//MACHINE
 	// byte 1
-	COMPRESSOR_OIL_HEATER = 0x09
+	COMPRESSOR_OIL_HEATER = 0x90
 	// byte 2
 	CIRCULATION_PUMP_ON byte = 0x40
 	// byte 7 and 8
