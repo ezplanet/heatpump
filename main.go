@@ -233,8 +233,8 @@ func main() {
 				case COOL:
 					vitocal.Mode = domain.MODE_COOL
 				}
-				vitocal.FanSpeed = int(value[5])
-				vitocal.CompressorHz = int(value[6])
+				vitocal.CompressorHz = int(value[5])
+				vitocal.FanSpeed = int(value[6])
 				vitocal.PumpSpeed = int(value[7])
 				vitocal.Hours = int(value[8])
 				states = fmt.Sprintf("%04x %04x %04x", value[0], value[1], value[2])

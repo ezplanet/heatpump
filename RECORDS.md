@@ -5,8 +5,8 @@ Record Size = 27 - Values Size: 22
 ```
  +--- Vitocal Modbus Address
  |  +--- MODBUS read = 3
- |  |  +--- Data Size = 22 (2 bytes)    +--+--- Fans RPM
- |  |  |  +-- Compressor                |  |  +--+--- Compressor Hertz                                 
+ |  |  +--- Data Size = 22 (2 bytes)    +--+--- Compressor speed
+ |  |  |  +-- Compressor                |  |  +--+--- Fans RPM                                 
  |  |  |  |  +--- Control Mode          |  |  |  |  +--+--- Circulation Pump Speed % 
  |  |  |  |  |        +---Heat/Cool     |  |  |  |  |  |  +--+--- Hours     +--+--- Checksum (2 bytes inverted)   
  |  |  |  |  |        |                 |  |  |  |  |  |  |  |              |  |
