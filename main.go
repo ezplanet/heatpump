@@ -32,6 +32,9 @@ const (
 	// byte 1
 	COMPRESSOR_OIL_HEATER = 0x90
 	// byte 2
+	COMPRESSOR_STARTING byte = 0x01
+	COMPRESSOR_RUNNING  byte = 0x04
+	COMPRESSOR_THRUST   byte = 0x08
 	CIRCULATION_PUMP_ON byte = 0x40
 	// byte 7 and 8
 	COMPRESSOR_ACTIVE       uint16 = 0x8000
@@ -252,7 +255,11 @@ func main() {
 
 				if buf[3]&ON == 0 {
 					if vitocal.CompressorRequired {
-						vitocal.CompressorStatus = domain.STARTING
+						if buf[4]&COMPRESSOR_STARTING == COMPRESSOR_STARTING {
+							vitocal.CompressorStatus = domain.STARTING2
+						} else {
+							vitocal.CompressorStatus = domain.STARTING
+						}
 					} else {
 						vitocal.CompressorStatus = domain.OFF
 					}
@@ -265,6 +272,11 @@ func main() {
 					vitocal.OilHeater = domain.ON
 				} else {
 					vitocal.OilHeater = domain.OFF
+				}
+				if buf[4]&COMPRESSOR_THRUST == COMPRESSOR_THRUST {
+					vitocal.CompressorThrust = true
+				} else {
+					vitocal.CompressorThrust = false
 				}
 				if value[2]&CIRCULATION_PUMP_ACTIVE == CIRCULATION_PUMP_ACTIVE {
 					vitocal.PumpStatus = domain.ON

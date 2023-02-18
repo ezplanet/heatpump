@@ -41,19 +41,19 @@ Compressor status: 0x00 = OFF; 0x01 = RUNNING; 0x10 = ALWAYS; 0x80 OIL HEATER ON
 Byte 3 bitmap:
 ```
 X X X X X X X X
-|       |     |      
-|       |     +- Compressor ON 
-|       + Always ON
-|
+|     |       |      
+|     |       +- Compressor ON 
+|     + Always ON
 +- Oil Heater ON
 ```
-Circulation Pump + Compressor status: 0x40 = Circulation Pump ON; 0x04 Compressor running; ??? = 0x08
+Circulation Pump + Compressor status: 0x40 = Circulation Pump ON; 0x04 Compressor running; Thrust = 0x08
 Byte 4 bitmap:
 ```
 X X X X X X X X
-  |     | |
+  |     | |   |
+  |     | |   + Compressor starting
   |     | +- Compressor running
-  |     +- ON when running sometimes. What is it?  
+  |     +- Thrust (getting to temperature)  
   +- Circulation Pump ON
 ```
 Circulation Pump: 0x0000 = OFF; 0x0601 = ON; 

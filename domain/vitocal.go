@@ -13,6 +13,7 @@ const (
 	OFF              int = 0
 	ON               int = 1
 	STARTING         int = 2
+	STARTING2        int = 3
 	MODE_HEAT        int = 1
 	MODE_COOL        int = 2
 	DEFROST_INACTIVE int = 0
@@ -29,6 +30,7 @@ type Vitocal struct {
 	OilHeater          int                  `json:"oil_heater"`
 	CompressorRequired bool                 `json:"compressor_required"`
 	CompressorStatus   int                  `json:"compressor_status"`
+	CompressorThrust   bool                 `json:"compressor_thrust"`
 	CompressorHz       int                  `json:"compressor_hz"`
 	PumpStatus         int                  `json:"pump_status"`
 	PumpSpeed          int                  `json:"pump_speed"`
