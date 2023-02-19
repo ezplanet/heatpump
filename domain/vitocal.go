@@ -30,7 +30,7 @@ type Vitocal struct {
 	OilHeater          int                  `json:"oil_heater"`
 	CompressorRequired bool                 `json:"compressor_required"`
 	CompressorStatus   int                  `json:"compressor_status"`
-	CompressorThrust   bool                 `json:"compressor_thrust"`
+	CompressorThrust   int                  `json:"compressor_thrust"`
 	CompressorHz       int                  `json:"compressor_hz"`
 	PumpStatus         int                  `json:"pump_status"`
 	PumpSpeed          int                  `json:"pump_speed"`

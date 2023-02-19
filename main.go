@@ -274,9 +274,9 @@ func main() {
 					vitocal.OilHeater = domain.OFF
 				}
 				if buf[4]&COMPRESSOR_THRUST == COMPRESSOR_THRUST {
-					vitocal.CompressorThrust = true
+					vitocal.CompressorThrust = domain.ON
 				} else {
-					vitocal.CompressorThrust = false
+					vitocal.CompressorThrust = domain.OFF
 				}
 				if value[2]&CIRCULATION_PUMP_ACTIVE == CIRCULATION_PUMP_ACTIVE {
 					vitocal.PumpStatus = domain.ON
