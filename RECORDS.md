@@ -1,5 +1,18 @@
 #### TEMPERATURES
 
+```
+ +--- Always equal to value in index 2
+ |  +--- Water Temperature IN
+ |  |  +--- Water Temperature OUT                                     +--- Compressor Temperature IN (?)
+ |  |  |                                                              |
+ |  |  |              +--- Pressure High                              |                 +--- External Air Temperature
+ |  |  |              |                       +--- Pressure Low       |                 |              +--- Compressor Temperature OUT
+ |  |  |              |                       |                       |                 |              |                    
+ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
+          X  X  X  X     X  X  X  X  X  X  X     X  X  X  X  X  X  X     X  X  X  X  X     X  X  X  X     X  X  X  X  X  X  X  X  X  X  X  X  X
+          
+ X = 7ffe (always)
+```
 #### STATES
 Record Size = 27 - Values Size: 22
 ```

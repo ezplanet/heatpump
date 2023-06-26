@@ -58,7 +58,6 @@ const (
 	COOL_MANUAL byte = 0xc0
 
 	// BASE
-	BASE_SHM              string = "/dev/shm/"
 	VITOCAL_POWERED       string = "VitocalPowered"
 	VITOCAL_PUMP_ON       string = "VitocalPumpOn"
 	VITOCAL_STATUS_ON     string = "VitocalStatusOn"
@@ -111,7 +110,7 @@ func main() {
 	var machine string
 	var errors string
 	//var unidentified string
-	//var temp_unidentified string
+	var raw_temperatures string
 	var vitocal domain.Vitocal
 	var errorCount int = 0
 
@@ -123,8 +122,8 @@ func main() {
 			if os.IsTimeout(err) {
 				//fmt.Printf("Timeout: %s\n", err)
 				if vitocalPowered >= 1 {
-					cmd := exec.Command("/bin/rm", "-f", BASE_SHM+VITOCAL_POWERED,
-						BASE_SHM+VITOCAL_STATUS_ON, BASE_SHM+VITOCAL_PUMP_ON, BASE_SHM+VITOCAL_COMPRESSOR_ON)
+					cmd := exec.Command("/bin/rm", "-f", base.BaseSHM+VITOCAL_POWERED,
+						base.BaseSHM+VITOCAL_STATUS_ON, base.BaseSHM+VITOCAL_PUMP_ON, base.BaseSHM+VITOCAL_COMPRESSOR_ON)
 					err := cmd.Run()
 					if err != nil {
 						fmt.Printf("Error removing vitocal state files: %s\n", err)
@@ -175,21 +174,25 @@ func main() {
 				temperatureIn := float32(value[1]) / 10
 				temperatureOut := float32(value[2]) / 10
 				temperatureExt := float32(value[29]) / 10
+				ingressoComp := float32((value[23]) / 10)
 				scaricoComp := float32(value[34]) / 10
 				vitocal.Temperatures.Input = fmt.Sprintf("%.1f", float32(value[1])/10)
 				vitocal.Temperatures.Output = fmt.Sprintf("%.1f", float32(value[2])/10)
 				vitocal.Temperatures.External = fmt.Sprintf("%.1f", float32(value[29])/10)
+				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", float32(value[23])/10)
 				vitocal.Temperatures.Compressor = fmt.Sprintf("%.1f", float32(value[34])/10)
 				vitocal.PressureHigh = int(value[7])
 				vitocal.PressureLow = int(value[15])
-				temperatures = fmt.Sprintf("Temp: in=%.1f out=%.1f ext=%.1f comp=%.1f - Press: high=%d low=%d",
-					temperatureIn, temperatureOut, temperatureExt, scaricoComp,
+				temperatures = fmt.Sprintf("Temp: in=%.1f out=%.1f ext=%.1f comp in=%.1f comp out=%.1f - Press: high=%d low=%d",
+					temperatureIn, temperatureOut, temperatureExt, ingressoComp, scaricoComp,
 					value[7], value[15])
 
-				//temp_unidentified = ""
-				//for i := 0; i < len(value)-2; i++ {
-				//	temp_unidentified = fmt.Sprintf("%s %04x ", temp_unidentified, value[i])
-				//}
+				if base.RawLog {
+					raw_temperatures = ""
+					for i := 0; i < len(value)-2; i++ {
+						raw_temperatures = fmt.Sprintf("%s%04x ", raw_temperatures, value[i])
+					}
+				}
 				template |= TEMPERATURES
 			}
 
@@ -325,8 +328,10 @@ func main() {
 				// Throttle down to 1 message every minute when the heat pump is in STAND BY
 				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON || vitocal.Timestamp.Sub(lastTime).Seconds() > 60 {
 					log.Printf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
-					//fmt.Printf("%s  %s - %s\n", vitocal.Timestamp.Format("2006/02/01 15:04:05"), unidentified, temp_unidentified)
-					//fmt.Printf("%s\n", string(prettyJSON))
+					if base.RawLog {
+						fmt.Printf("%s  %s\n", vitocal.Timestamp.Format("2006/01/02 15:04:05"), raw_temperatures)
+						//fmt.Printf("%s\n", string(prettyJSON))
+					}
 					mqtt.Publish(mqtt.VitocalTopic, true, string(linearJSON))
 					lastTime = vitocal.Timestamp
 				} else {
@@ -344,9 +349,9 @@ func main() {
 
 func setVitocalStateOn(state uint8, file string) uint8 {
 	if state == OFF || state == 0xFF {
-		_, err := os.Create(BASE_SHM + file)
+		_, err := os.Create(base.BaseSHM + file)
 		if err != nil {
-			fmt.Println("Error creating file: ", BASE_SHM+file)
+			fmt.Println("Error creating file: ", base.BaseSHM+file)
 			return state
 		} else {
 			return ON
@@ -358,7 +363,7 @@ func setVitocalStateOn(state uint8, file string) uint8 {
 
 func setVitocalStateOff(state uint8, file string) uint8 {
 	if state == ON || state == 0xFF {
-		cmd := exec.Command("/bin/rm", "-f", BASE_SHM+file)
+		cmd := exec.Command("/bin/rm", "-f", base.BaseSHM+file)
 		err := cmd.Run()
 		if err != nil {
 			fmt.Printf("Error removing vitocal state file %s: %s\n", file, err)
