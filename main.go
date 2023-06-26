@@ -334,7 +334,7 @@ func main() {
 						fmt.Printf("%s  %s\n", vitocal.Timestamp.Format("2006/01/02 15:04:05"), raw_temperatures)
 						//fmt.Printf("%s\n", string(prettyJSON))
 					}
-					err := mqtt.Publish(base.MqttTopic, false, string(linearJSON))
+					err := mqtt.Publish(base.MqttTopic, true, string(linearJSON))
 					if err != nil {
 						log.Print("MQTT Publish Error: ", err)
 					}
