@@ -22,22 +22,22 @@ const (
 )
 
 type Vitocal struct {
-	Timestamp          time.Time            `json:"timestamp"`
-	ControlMode        int                  `json:"control_mode"`
-	Status             int                  `json:"status"`
-	Mode               int                  `json:"mode"`
-	Defrost            int                  `json:"defrost"`
-	OilHeater          int                  `json:"oil_heater"`
-	CompressorRequired bool                 `json:"compressor_required"`
-	CompressorStatus   int                  `json:"compressor_status"`
-	CompressorThrust   int                  `json:"compressor_thrust"`
-	CompressorHz       int                  `json:"compressor_hz"`
-	PumpStatus         int                  `json:"pump_status"`
-	PumpSpeed          int                  `json:"pump_speed"`
-	FanSpeed           int                  `json:"fan_speed"`
-	Temperatures       vitocal.Temperatures `json:"temperatures"`
-	PressureHigh       int                  `json:"pressure_high"`
-	PressureLow        int                  `json:"pressure_low"`
-	Hours              int                  `json:"hours"`
-	Errors             vitocal.Errors       `json:"errors"`
+	Timestamp            time.Time            `json:"timestamp"`
+	ControlMode          int                  `json:"control_mode"`
+	Status               int                  `json:"status"`
+	Mode                 int                  `json:"mode"`
+	Defrost              int                  `json:"defrost"`
+	OilHeater            int                  `json:"oil_heater"`
+	CompressorRequired   bool                 `json:"compressor_required"`
+	CompressorStatus     int                  `json:"compressor_status"`
+	CompressorThrust     int                  `json:"compressor_thrust"`
+	CompressorHz         int                  `json:"compressor_hz"`
+	PumpStatus           int                  `json:"pump_status"`
+	PumpSpeed            int                  `json:"pump_speed"`
+	FanSpeed             int                  `json:"fan_speed"`
+	Temperatures         vitocal.Temperatures `json:"temperatures"`
+	PressureSuction      int                  `json:"pressure_suction"`
+	PressureCondensation int                  `json:"pressure_condensation"`
+	Hours                int                  `json:"hours"`
+	Errors               vitocal.Errors       `json:"errors"`
 }

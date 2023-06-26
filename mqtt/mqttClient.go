@@ -3,40 +3,36 @@ package mqtt
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"log"
-	"os"
-
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"heatpump/base"
+	"log"
 )
 
 const (
 	mqttLogPrefix = "MQTT -"
 	interleave    = "Interleave"
 	fast          = "Fast"
-	MqttServer    = "ssl://lambo.ezplanet.org:8883"
-	MqttClientId  = "vitocal-dev"
-	VitocalTopic  = "climatico/vitocal"
 )
 
 type Message struct{}
 
-var vitocalTopic string = "climatico/vitocal"
 var mqttClient MQTT.Client
 
 func init() {
-	mqttServer := os.Getenv("MQTT_SERVER")
-	if len(mqttServer) == 0 {
-		mqttServer = MqttServer
-	}
-	mqttClientId := os.Getenv("MQTT_CLIENT_ID")
-	if len(mqttClientId) == 0 {
-		mqttClientId = MqttClientId
-	}
-	log.Printf("%s connecting to mqtt server: %s", mqttLogPrefix, mqttServer)
+	//mqttServer := os.Getenv("MQTT_SERVER")
+	//if len(mqttServer) == 0 {
+	//	mqttServer = MqttServer
+	//}
+	//mqttClientId := os.Getenv("MQTT_CLIENT_ID")
+	//if len(mqttClientId) == 0 {
+	//	mqttClientId = MqttClientId
+	//}
+
+	log.Printf("%s connecting to mqtt server: %s", mqttLogPrefix, base.MqttServer)
 	tlsconfig := NewTLSConfig()
 	opts := MQTT.NewClientOptions().
-		AddBroker(mqttServer).
-		SetClientID(mqttClientId).
+		AddBroker(base.MqttServer).
+		SetClientID(base.MqttClientId).
 		SetConnectionLostHandler(connLostHandler).
 		SetTLSConfig(tlsconfig)
 
@@ -44,9 +40,9 @@ func init() {
 	mqttConnect()
 }
 
-func SetVitocalTopic(topic string) {
-	vitocalTopic = topic
-}
+//func SetVitocalTopic(topic string) {
+//	vitocalTopic = topic
+//}
 
 // If the connection to the MQTT broker is lost, try to reconnect
 func CheckConnection() {

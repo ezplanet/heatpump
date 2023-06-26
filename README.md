@@ -1,7 +1,7 @@
-# Viessman Vitocal 100A Heatpump Telemetry
+# Viessman Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx - Heatpump Telemetry
 
 ## Purpose
-The purpose of this service is to make Viessmann Vitocal 100A telemetry available to IoT services and monitors 
+The purpose of this service is to make Viessmann Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx series heatpumps telemetry available to IoT services and monitors 
 
 ## Description
 This service reads the MODBUS communications between a Viessmann Remote Touch Controller (master) and a Vitocal 100A heatpump (slave) and posts heatpump data in json format to an MQTT topic.
@@ -9,7 +9,7 @@ A Remote Touch Controller (RTC) is essential because this service only reads MOD
 It could be possible to reproduce the queries sent by the RTC, however this service was designed to be read only in order to avoid the risk of sending unwanted configuration changes to the heatpump. 
 
 ## Note
-Vitocal 100A MODBUS data packets are undocumented (Viessmann does not provide documentation), they have been decoded by observing the heatpump behaviour and patterns and thus in some cases they might be inaccurate or incorrect.
+Viessmann, Rinnai, Thermocold MODBUS data packets are undocumented (The Manufacturers do not provide documentation), they have been decoded by observing the heatpump behaviour and patterns and thus in some cases they might be inaccurate or incorrect.
 
 ## Decoding
 Four query/response records have been decoded, each are identified by their length 
@@ -66,10 +66,11 @@ BYTE   CONTENT
     "pump_speed":0,
     "fan_speed":0,
     "temperatures":{
-        "input":"18.7",
-        "output":"17.9",
+        "water_in":"18.7",
+        "water_out":"17.9",
         "external":"15.6",
-        "compressor":"17.0"
+        "compressor_in":"17.0"
+        "compressor_out":"50.5"
     },
     "pressure_high":1189,
     "pressure_low":1201,

@@ -8,6 +8,15 @@ import (
 )
 
 const (
+	mqttServerKey     string = "MQTT_SERVER"
+	mqttServerDefault string = "ssl://lambo.ezplanet.org:8883"
+
+	mqttClientIdKey     string = "MQTT_CLIENT_ID"
+	mqttClientIdDefault string = "heatpump"
+
+	mqttTopicKey     string = "MQTT_TOPIC"
+	mqttTopicDefault string = "climatico/vitocal"
+
 	vitocalModbusAddrKey     string = "VITOCAL_MODBUS_ADDR"
 	vitocalModbusAddrDefault int    = 1
 
@@ -22,6 +31,9 @@ const (
 )
 
 var (
+	MqttServer        string
+	MqttClientId      string
+	MqttTopic         string
 	VitocalModbusAddr int
 	VitocalModbusTcp  string
 	BaseSHM           string
@@ -34,6 +46,21 @@ func init() {
 	err = godotenv.Load() //Load .env file
 	if err != nil {
 		log.Print(err)
+	}
+
+	MqttServer = os.Getenv(mqttServerKey)
+	if len(MqttServer) <= 0 {
+		MqttServer = mqttServerDefault
+	}
+
+	MqttClientId = os.Getenv(mqttClientIdKey)
+	if len(MqttServer) <= 0 {
+		MqttClientId = mqttClientIdDefault
+	}
+
+	MqttTopic = os.Getenv(mqttTopicKey)
+	if len(MqttServer) <= 0 {
+		MqttTopic = mqttTopicDefault
 	}
 
 	if len(os.Getenv(vitocalModbusAddrKey)) == 0 {
