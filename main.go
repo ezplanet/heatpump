@@ -185,7 +185,7 @@ func main() {
 				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", float32(value[34])/10)
 				vitocal.PressureCondensation = int(value[7])
 				vitocal.PressureSuction = int(value[15])
-				temperatures = fmt.Sprintf("Temp: wtr_in=%.1f wtr_out=%.1f ext=%.1f cmp_in=%.1f cmp_out=%.1f - Press: suction=%.2f condensation=%.2f",
+				temperatures = fmt.Sprintf("Temp: wtr_in=%.1f wtr_out=%.1f ext=%.1f cmp_in=%.1f cmp_out=%.1f - Press: suct=%.2f cond=%.2f",
 					temperatureIn, temperatureOut, temperatureExt, ingressoComp, scaricoComp,
 					suctionPressure, condensationPressure)
 
