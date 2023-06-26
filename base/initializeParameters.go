@@ -13,11 +13,19 @@ const (
 
 	vitocalModbusTcpKey     string = "VITOCAL_MODBUS_TCP"
 	vitocalModbusTcpDefault string = "heatpump:502"
+
+	baseSHMKey     string = "BASE_SHM"
+	baseSHMDefault string = "/dev/shm"
+
+	rawLogKey     string = "RAWLOG"
+	rawLogDefault bool   = false
 )
 
 var (
 	VitocalModbusAddr int
 	VitocalModbusTcp  string
+	BaseSHM           string
+	RawLog            bool
 )
 
 func init() {
@@ -41,4 +49,23 @@ func init() {
 	if len(VitocalModbusTcp) <= 0 {
 		VitocalModbusTcp = vitocalModbusTcpDefault
 	}
+
+	BaseSHM = os.Getenv(baseSHMKey)
+	if len(BaseSHM) <= 0 {
+		BaseSHM = baseSHMDefault
+	} else {
+		if BaseSHM[len(BaseSHM)-1:] != "/" {
+			BaseSHM = BaseSHM + "/"
+		}
+	}
+
+	if len(os.Getenv(rawLogKey)) == 0 {
+		RawLog = rawLogDefault
+	} else {
+		RawLog, err = strconv.ParseBool(os.Getenv(rawLogKey))
+		if err != nil {
+			RawLog = rawLogDefault
+		}
+	}
+	log.Print("RAWLOG: ", RawLog)
 }
