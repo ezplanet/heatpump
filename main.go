@@ -167,25 +167,27 @@ func main() {
 
 			//fmt.Println(size, buf[2], checksum, buf[size-2], buf[size-1], buf)
 
-			// TEMPERATURES - Address 0x018f
+			// TEMPERATURES and PRESSURES - Address 0x018f
 			if size == 105 && buf[2] == 100 && (template&TEMPERATURES) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
 				temperatureIn := float32(value[1]) / 10
 				temperatureOut := float32(value[2]) / 10
 				temperatureExt := float32(value[29]) / 10
-				ingressoComp := float32((value[23]) / 10)
+				ingressoComp := float32(value[23]) / 10
 				scaricoComp := float32(value[34]) / 10
-				vitocal.Temperatures.Input = fmt.Sprintf("%.1f", float32(value[1])/10)
-				vitocal.Temperatures.Output = fmt.Sprintf("%.1f", float32(value[2])/10)
+				suctionPressure := float32(value[15]) / 100
+				condensationPressure := float32(value[7]) / 100
+				vitocal.Temperatures.WaterIn = fmt.Sprintf("%.1f", float32(value[1])/10)
+				vitocal.Temperatures.WaterOut = fmt.Sprintf("%.1f", float32(value[2])/10)
 				vitocal.Temperatures.External = fmt.Sprintf("%.1f", float32(value[29])/10)
 				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", float32(value[23])/10)
-				vitocal.Temperatures.Compressor = fmt.Sprintf("%.1f", float32(value[34])/10)
-				vitocal.PressureHigh = int(value[7])
-				vitocal.PressureLow = int(value[15])
-				temperatures = fmt.Sprintf("Temp: in=%.1f out=%.1f ext=%.1f comp in=%.1f comp out=%.1f - Press: high=%d low=%d",
+				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", float32(value[34])/10)
+				vitocal.PressureCondensation = int(value[7])
+				vitocal.PressureSuction = int(value[15])
+				temperatures = fmt.Sprintf("Temp: wtr_in=%.1f wtr_out=%.1f ext=%.1f cmp_in=%.1f cmp_out=%.1f - Press: suction=%.2f condensation=%.2f",
 					temperatureIn, temperatureOut, temperatureExt, ingressoComp, scaricoComp,
-					value[7], value[15])
+					suctionPressure, condensationPressure)
 
 				if base.RawLog {
 					raw_temperatures = ""
@@ -332,7 +334,10 @@ func main() {
 						fmt.Printf("%s  %s\n", vitocal.Timestamp.Format("2006/01/02 15:04:05"), raw_temperatures)
 						//fmt.Printf("%s\n", string(prettyJSON))
 					}
-					mqtt.Publish(mqtt.VitocalTopic, true, string(linearJSON))
+					err := mqtt.Publish(base.MqttTopic, false, string(linearJSON))
+					if err != nil {
+						log.Print("MQTT Publish Error: ", err)
+					}
 					lastTime = vitocal.Timestamp
 				} else {
 					//fmt.Printf("waiting %s\n", vitocal.Timestamp.Sub(lastTime))
