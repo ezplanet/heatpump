@@ -81,6 +81,10 @@ func init() {
 	if len(BaseSHM) <= 0 {
 		BaseSHM = baseSHMDefault
 	} else {
+		err := os.MkdirAll(BaseSHM, 0755)
+		if err != nil {
+			BaseSHM = baseSHMDefault
+		}
 		if BaseSHM[len(BaseSHM)-1:] != "/" {
 			BaseSHM = BaseSHM + "/"
 		}

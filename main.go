@@ -62,6 +62,7 @@ const (
 	VITOCAL_PUMP_ON       string = "VitocalPumpOn"
 	VITOCAL_STATUS_ON     string = "VitocalStatusOn"
 	VITOCAL_COMPRESSOR_ON string = "VitocalCompressorOn"
+	VITOCAL_MODE_COOL     string = "VitocalModeCool"
 )
 
 var (
@@ -69,6 +70,7 @@ var (
 	vitocalPump       uint8 = 0xFF
 	vitocalStatus     uint8 = 0xFF
 	vitocalCompressor uint8 = 0xFF
+	vitocalModeCool   uint8 = 0xFF
 )
 
 func main() {
@@ -123,7 +125,8 @@ func main() {
 				//fmt.Printf("Timeout: %s\n", err)
 				if vitocalPowered >= 1 {
 					cmd := exec.Command("/bin/rm", "-f", base.BaseSHM+VITOCAL_POWERED,
-						base.BaseSHM+VITOCAL_STATUS_ON, base.BaseSHM+VITOCAL_PUMP_ON, base.BaseSHM+VITOCAL_COMPRESSOR_ON)
+						base.BaseSHM+VITOCAL_STATUS_ON, base.BaseSHM+VITOCAL_PUMP_ON, base.BaseSHM+VITOCAL_COMPRESSOR_ON,
+						base.BaseSHM+VITOCAL_MODE_COOL)
 					err := cmd.Run()
 					if err != nil {
 						fmt.Printf("Error removing vitocal state files: %s\n", err)
@@ -132,6 +135,7 @@ func main() {
 						vitocalStatus = OFF
 						vitocalCompressor = OFF
 						vitocalPump = OFF
+						vitocalModeCool = OFF
 					}
 				}
 				continue
@@ -238,8 +242,10 @@ func main() {
 				switch buf[7] {
 				case HEAT:
 					vitocal.Mode = domain.MODE_HEAT
+					vitocalModeCool = setVitocalStateOff(vitocalModeCool, VITOCAL_MODE_COOL)
 				case COOL:
 					vitocal.Mode = domain.MODE_COOL
+					vitocalModeCool = setVitocalStateOn(vitocalModeCool, VITOCAL_MODE_COOL)
 				}
 				vitocal.CompressorHz = int(value[5])
 				vitocal.FanSpeed = int(value[6])
