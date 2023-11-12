@@ -13,6 +13,7 @@ Viessmann, Rinnai, Thermocold MODBUS data packets are undocumented (The Manufact
 
 ## Decoding
 Four query/response records have been decoded, each are identified by their length 
+
 ### MODBUS Read Registers Records
 A Vitocal 100A response record looks as follows:
 ```
