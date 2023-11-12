@@ -35,23 +35,12 @@ MACHINE      = 11 bytes
 TEMPERATURES = 100 bytes
 ERRORS       = 15 bytes
 ```
-The data payload size for each type is its size less 5 bytes (1 address, 1 function, 1 payload size, 2 checksum), thus the validity of a response record is verified by checking that the value of the third byte (payload size) is equal the total record size less five.
-#### STATES
-Data payload is (27-5)/2 = 11 * 2 byte registers
-```
-BYTE   CONTENT
- 0     Target address
- 1     Modbus Function (3 = read registers) 
- 2     Data registers size (registers are 2 bytes)
- 3     Status: 3 = OFF
- 4     Control Mode: 0 = OFF; 1 = ON; 2 = REMOTE/AUTO
- 5
- 6
- 7     Mode heat/cool (heat - 0x40, cool = 0x80)
+The data payload size for each type is its size less 5 bytes (1 byte for the address, 1 byte for function, 1 byte for payload size, 2 bytes for checksum), thus the validity of a response record is verified by checking that the value of the third byte (payload size) is equal the total record size less five.
 
-```
+See RECORDS.md for MODBUS telemetry decoding 
 
 ### JSON telemetry data
+This service reads the modbus data stream from the heat pump and encodes it into data stream in json format that is publised to a mosquitto topic. When the heatpump is in standby, records sent to mosquitto are throttled down to one every X seconds (where X is a configurable value) to reduce network traffic.
 
 ```
 {
