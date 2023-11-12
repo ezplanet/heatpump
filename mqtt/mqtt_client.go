@@ -1,3 +1,28 @@
+// Copyright 2023 by mauro@ezplanet.org (Mauro Mozzarelli)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 package mqtt
 
 import (
@@ -19,15 +44,6 @@ type Message struct{}
 var mqttClient MQTT.Client
 
 func init() {
-	//mqttServer := os.Getenv("MQTT_SERVER")
-	//if len(mqttServer) == 0 {
-	//	mqttServer = MqttServer
-	//}
-	//mqttClientId := os.Getenv("MQTT_CLIENT_ID")
-	//if len(mqttClientId) == 0 {
-	//	mqttClientId = MqttClientId
-	//}
-
 	log.Printf("%s connecting to mqtt server: %s", mqttLogPrefix, base.MqttServer)
 	tlsconfig := NewTLSConfig()
 	opts := MQTT.NewClientOptions().
@@ -39,10 +55,6 @@ func init() {
 	mqttClient = MQTT.NewClient(opts)
 	mqttConnect()
 }
-
-//func SetVitocalTopic(topic string) {
-//	vitocalTopic = topic
-//}
 
 // If the connection to the MQTT broker is lost, try to reconnect
 func CheckConnection() {

@@ -1,7 +1,7 @@
 # Viessman Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx - Heatpump Telemetry
 
 ## Purpose
-The purpose of this service is to make Viessmann Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx series heatpumps telemetry available to IoT services and monitors 
+Heatpump telemetry for makes/models: Viessmann Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx series is decoded to json and posted to a mosquitto topic
 
 ## Description
 This service reads the MODBUS communications between a Viessmann Remote Touch Controller (master) and a Vitocal 100A heatpump (slave) and posts heatpump data in json format to an MQTT topic.
