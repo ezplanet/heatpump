@@ -16,21 +16,19 @@ import (
 )
 
 const (
-	MODBUS_READ uint8 = 0x03
-	//UNIDENTIFIED uint8 = 0x10
+	MODBUS_READ  uint8 = 0x03
 	ERRORS       uint8 = 0x08
 	TEMPERATURES uint8 = 0x04
 	STATES       uint8 = 0x02
 	MACHINE      uint8 = 0x01
 	COMPLETE     uint8 = 0x0F
-	//COMPLETE     uint8 = 0x1F
 
 	OFF byte = 0x00
 	ON  byte = 0x01
 
 	//MACHINE
 	// byte 1
-	COMPRESSOR_OIL_HEATER = 0x80
+	COMPRESSOR_OIL_HEATER byte = 0x80
 	// byte 2
 	COMPRESSOR_STARTING byte = 0x01
 	COMPRESSOR_RUNNING  byte = 0x04
@@ -76,39 +74,15 @@ var (
 func Decode(c net.Conn) error {
 	defer c.Close()
 
-	var slaveAddress byte = 1
-	var functionCode byte = 3
-	var startAdress uint16 = 0
-	var numberOfPoints uint16 = 2
 	var lastTime time.Time
-
-	// build Modbus RTU message
-	var frame [8]byte
-	frame[0] = slaveAddress
-	frame[1] = functionCode
-	frame[2] = byte(startAdress >> 8)
-	frame[3] = byte(startAdress)
-	frame[4] = byte(numberOfPoints >> 8)
-	frame[5] = byte(numberOfPoints)
-	checksum := crc16(frame[:], 8)
-	frame[6] = checksum[0]
-	frame[7] = checksum[1]
-
 	buf := make([]byte, 256) // using small buffer
 	var template uint8 = 0
 	var temperatures string
 	var states string
 	var machine string
 	var errors string
-	//var unidentified string
 	var raw_temperatures string
 	var vitocal domain.Vitocal
-
-	fmt.Print("Checksum test: ")
-	for i := 0; i < 8; i++ {
-		fmt.Printf("%02x ", frame[i])
-	}
-	fmt.Println()
 
 	for {
 		c.SetReadDeadline(time.Now().Add(15 * time.Second))
@@ -151,7 +125,6 @@ func Decode(c net.Conn) error {
 				fmt.Println(size, buf[2], checksum, buf[size-2], buf[size-1], buf)
 				continue
 			}
-
 			//fmt.Println(size, buf[2], checksum, buf[size-2], buf[size-1], buf)
 
 			// TEMPERATURES and PRESSURES - Address 0x018f
@@ -299,12 +272,6 @@ func Decode(c net.Conn) error {
 				vitocal.Errors.Error5 = value[4]
 				template |= ERRORS
 			}
-
-			// Address 0xc288 - Size 1
-			//if size == 7 && buf[2] == 2 && (template&UNIDENTIFIED) == 0 {
-			//	unidentified = fmt.Sprintf("%02x %02x", buf[3], buf[4])
-			//	template |= UNIDENTIFIED
-			//}
 		}
 
 		vitocal.Timestamp = time.Now()
@@ -314,10 +281,11 @@ func Decode(c net.Conn) error {
 			//prettyJSON, err := json.MarshalIndent(vitocal, "", "   ")
 			linearJSON, err := json.Marshal(vitocal)
 			if err != nil {
-				log.Fatal("Failed to generate JSON")
+				log.Fatal("failed to generate JSON")
 			} else {
-				// Throttle down to 1 message every minute when the heat pump is in STAND BY
-				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON || vitocal.Timestamp.Sub(lastTime).Seconds() > 60 {
+				// Throttle down to 1 message every StandbyThrottleSeconds when the heat pump is in STAND BY
+				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON ||
+					vitocal.Timestamp.Sub(lastTime).Seconds() > base.StandbyThrottleSeconds {
 					log.Printf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
 					if base.RawLog {
 						fmt.Printf("%s  %s\n", vitocal.Timestamp.Format("2006/01/02 15:04:05"), raw_temperatures)
@@ -325,7 +293,7 @@ func Decode(c net.Conn) error {
 					}
 					err := mqtt.Publish(base.MqttTopic, true, string(linearJSON))
 					if err != nil {
-						log.Print("MQTT Publish Error: ", err)
+						log.Print("MQTT publish Error: ", err)
 					}
 					lastTime = vitocal.Timestamp
 				} else {
