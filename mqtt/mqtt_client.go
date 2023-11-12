@@ -19,15 +19,6 @@ type Message struct{}
 var mqttClient MQTT.Client
 
 func init() {
-	//mqttServer := os.Getenv("MQTT_SERVER")
-	//if len(mqttServer) == 0 {
-	//	mqttServer = MqttServer
-	//}
-	//mqttClientId := os.Getenv("MQTT_CLIENT_ID")
-	//if len(mqttClientId) == 0 {
-	//	mqttClientId = MqttClientId
-	//}
-
 	log.Printf("%s connecting to mqtt server: %s", mqttLogPrefix, base.MqttServer)
 	tlsconfig := NewTLSConfig()
 	opts := MQTT.NewClientOptions().
@@ -39,10 +30,6 @@ func init() {
 	mqttClient = MQTT.NewClient(opts)
 	mqttConnect()
 }
-
-//func SetVitocalTopic(topic string) {
-//	vitocalTopic = topic
-//}
 
 // If the connection to the MQTT broker is lost, try to reconnect
 func CheckConnection() {

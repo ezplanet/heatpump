@@ -17,11 +17,14 @@ const (
 	mqttTopicKey     string = "MQTT_TOPIC"
 	mqttTopicDefault string = "climatico/vitocal"
 
-	vitocalModbusAddrKey     string = "VITOCAL_MODBUS_ADDR"
+	vitocalModbusAddrKey     string = "MODBUS_ADDR"
 	vitocalModbusAddrDefault int    = 1
 
-	vitocalModbusTcpKey     string = "VITOCAL_MODBUS_TCP"
+	vitocalModbusTcpKey     string = "MODBUS_TCP"
 	vitocalModbusTcpDefault string = "heatpump:502"
+
+	modbusConnectionTimeoutMinutesKey     string = "MODBUS_CONNECTION_TIMEOUT_MINUTES"
+	modbusConnectionTimeoutMinutesDefault int    = 60
 
 	baseSHMKey     string = "BASE_SHM"
 	baseSHMDefault string = "/dev/shm"
@@ -31,13 +34,14 @@ const (
 )
 
 var (
-	MqttServer        string
-	MqttClientId      string
-	MqttTopic         string
-	VitocalModbusAddr int
-	VitocalModbusTcp  string
-	BaseSHM           string
-	RawLog            bool
+	MqttServer                     string
+	MqttClientId                   string
+	MqttTopic                      string
+	VitocalModbusAddr              int
+	VitocalModbusTcp               string
+	ModbusConnectionTimeoutMinutes int
+	BaseSHM                        string
+	RawLog                         bool
 )
 
 func init() {
@@ -75,6 +79,15 @@ func init() {
 	VitocalModbusTcp = os.Getenv(vitocalModbusTcpKey)
 	if len(VitocalModbusTcp) <= 0 {
 		VitocalModbusTcp = vitocalModbusTcpDefault
+	}
+
+	if len(os.Getenv(modbusConnectionTimeoutMinutesKey)) == 0 {
+		ModbusConnectionTimeoutMinutes = modbusConnectionTimeoutMinutesDefault
+	} else {
+		ModbusConnectionTimeoutMinutes, err = strconv.Atoi(os.Getenv(modbusConnectionTimeoutMinutesKey))
+		if err != nil {
+			ModbusConnectionTimeoutMinutes = modbusConnectionTimeoutMinutesDefault
+		}
 	}
 
 	BaseSHM = os.Getenv(baseSHMKey)
