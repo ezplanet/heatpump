@@ -163,11 +163,11 @@ func Decode(c net.Conn) error {
 				scaricoComp := float32(value[34]) / 10
 				suctionPressure := float32(value[15]) / 100
 				condensationPressure := float32(value[7]) / 100
-				vitocal.Temperatures.WaterIn = fmt.Sprintf("%.1f", float32(value[1])/10)
-				vitocal.Temperatures.WaterOut = fmt.Sprintf("%.1f", float32(value[2])/10)
-				vitocal.Temperatures.External = fmt.Sprintf("%.1f", float32(value[29])/10)
-				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", float32(value[23])/10)
-				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", float32(value[34])/10)
+				vitocal.Temperatures.WaterIn = fmt.Sprintf("%.1f", float32(int16(value[1]))/10)
+				vitocal.Temperatures.WaterOut = fmt.Sprintf("%.1f", float32(int16(value[2]))/10)
+				vitocal.Temperatures.External = fmt.Sprintf("%.1f", float32(int16(value[29]))/10)
+				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", float32(int16(value[23]))/10)
+				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", float32(int16(value[34]))/10)
 				vitocal.PressureCondensation = int(value[7])
 				vitocal.PressureSuction = int(value[15])
 				temperatures = fmt.Sprintf("Temp: wtr_in=%.1f wtr_out=%.1f ext=%.1f cmp_in=%.1f cmp_out=%.1f - Press: suct=%.2f cond=%.2f",
