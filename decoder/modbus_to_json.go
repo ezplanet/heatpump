@@ -100,7 +100,7 @@ func Decode(c net.Conn) error {
 	defer c.Close()
 
 	var lastTime time.Time
-	buf := make([]byte, 256) // using small buffer
+	var buf = []byte{}
 	var template uint8 = 0
 	var temperatures string
 	var states string
@@ -110,6 +110,7 @@ func Decode(c net.Conn) error {
 	var vitocal domain.Vitocal
 
 	for {
+		buf = make([]byte, 256)
 		c.SetReadDeadline(time.Now().Add(15 * time.Second))
 		size, err := c.Read(buf)
 		if err != nil {
@@ -299,30 +300,33 @@ func Decode(c net.Conn) error {
 			}
 		}
 
-		vitocal.Timestamp = time.Now()
-
-		buf = make([]byte, 256)
+		// When all the records have been received, the TEMPLATE is complete, therefore we can send a message with
+		// the heatpump telemetry payload
 		if (template & COMPLETE) == COMPLETE {
-			//prettyJSON, err := json.MarshalIndent(vitocal, "", "   ")
+			vitocal.Timestamp = time.Now()
 			linearJSON, err := json.Marshal(vitocal)
 			if err != nil {
 				log.Fatal("failed to generate JSON")
 			} else {
-				// Throttle down to 1 message every StandbyThrottleSeconds when the heat pump is in STAND BY
-				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON ||
-					vitocal.Timestamp.Sub(lastTime).Seconds() > base.StandbyThrottleSeconds {
+				// Throttle messages at different intervals when the heat pump is running and or stand by
+				// to contain real time network traffic destined to web and phone apps
+				var standbySeconds float64
+				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON {
+					standbySeconds = base.RunningThrottleSeconds
+				} else {
+					standbySeconds = base.StandbyThrottleSeconds
+				}
+				// Throttle down to 1 message every standbySeconds
+				if vitocal.Timestamp.Sub(lastTime).Seconds() > standbySeconds {
 					log.Printf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
 					if base.RawLog {
 						fmt.Printf("%s  %s\n", vitocal.Timestamp.Format("2006/01/02 15:04:05"), raw_temperatures)
-						//fmt.Printf("%s\n", string(prettyJSON))
 					}
 					err := mqtt.Publish(base.MqttTopic, true, string(linearJSON))
 					if err != nil {
 						log.Print("MQTT publish Error: ", err)
 					}
 					lastTime = vitocal.Timestamp
-				} else {
-					//fmt.Printf("waiting %s\n", vitocal.Timestamp.Sub(lastTime))
 				}
 			}
 			template = 0

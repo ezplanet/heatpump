@@ -54,6 +54,9 @@ const (
 	standbyThrottleSecondsKey     string = "STANDBY_THROTTLE_SECONDS"
 	standbyThrottleSecondsDefault int    = 60
 
+	runningThrottleSecondsKey     string = "RUNNING_THROTTLE_SECONDS"
+	runningThrottleSecondsDefault int    = 1
+
 	baseSHMKey     string = "BASE_SHM"
 	baseSHMDefault string = "/dev/shm"
 
@@ -69,6 +72,7 @@ var (
 	VitocalModbusTcp               string
 	ModbusConnectionTimeoutMinutes int
 	StandbyThrottleSeconds         float64
+	RunningThrottleSeconds         float64
 	BaseSHM                        string
 	RawLog                         bool
 )
@@ -127,6 +131,17 @@ func init() {
 			StandbyThrottleSeconds = float64(standbyThrottleSecondsDefault)
 		} else {
 			StandbyThrottleSeconds = float64(StandbyThrottleSecondsInt)
+		}
+	}
+
+	if len(os.Getenv(runningThrottleSecondsKey)) == 0 {
+		RunningThrottleSeconds = float64(runningThrottleSecondsDefault)
+	} else {
+		RunningThrottleSecondsInt, err := strconv.Atoi(os.Getenv(runningThrottleSecondsKey))
+		if err != nil {
+			RunningThrottleSeconds = float64(runningThrottleSecondsDefault)
+		} else {
+			RunningThrottleSeconds = float64(RunningThrottleSecondsInt)
 		}
 	}
 
