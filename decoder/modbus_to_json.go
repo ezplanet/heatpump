@@ -51,10 +51,10 @@ const (
 	OFF byte = 0x00
 	ON  byte = 0x01
 
-	//MACHINE
-	// byte 1
+	// MACHINE
+	//  byte 1
 	COMPRESSOR_OIL_HEATER byte = 0x80
-	// byte 2
+	//  byte 2
 	COMPRESSOR_STARTING byte = 0x01
 	COMPRESSOR_RUNNING  byte = 0x04
 	COMPRESSOR_THRUST   byte = 0x08
@@ -63,19 +63,19 @@ const (
 	COMPRESSOR_ACTIVE       uint16 = 0x8000
 	CIRCULATION_PUMP_ACTIVE uint16 = 0x0601
 
-	//STATUS
-	// byte 3
+	// STATUS
+	//  byte 3
 	STATUS_STANDBY             byte = 0x02
 	STATUS_COMPRESSOR_REQUIRED byte = 0x10
 	STATUS_DEFROST_STARTING    byte = 0x30
 	STATUS_DEFROST_ACTIVE      byte = 0x50
 
-	// byte 4
+	//  byte 4
 	VITOCAL_OFF       byte = 0x00
 	VITOCAL_AUTO_COOL byte = 0x01
 	VITOCAL_AUTO_HEAT byte = 0x02
 
-	// byte 7
+	//  byte 7
 	HEAT        byte = 0x40
 	COOL        byte = 0x80
 	COOL_MANUAL byte = 0xc0
@@ -308,7 +308,6 @@ func Decode(c net.Conn) error {
 			if err != nil {
 				log.Fatal("failed to generate JSON")
 			} else {
-<<<<<<< HEAD
 				// Throttle messages at different intervals when the heat pump is running or on stand by
 				// to contain real time network traffic destined to web and phone apps.
 				// Message throttling is disabled in case the payload contains errors.
@@ -323,15 +322,6 @@ func Decode(c net.Conn) error {
 					} else {
 						standbySeconds = base.StandbyThrottleSeconds
 					}
-=======
-				// Throttle messages at different intervals when the heat pump is running and or stand by
-				// to contain real time network traffic destined to web and phone apps
-				var standbySeconds float64
-				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON {
-					standbySeconds = base.RunningThrottleSeconds
-				} else {
-					standbySeconds = base.StandbyThrottleSeconds
->>>>>>> 4a772e74960e101daf0da29c3b1119178b31831f
 				}
 				// Throttle down to 1 message every standbySeconds
 				if vitocal.Timestamp.Sub(lastTime).Seconds() > standbySeconds {
