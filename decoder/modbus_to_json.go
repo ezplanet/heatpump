@@ -308,6 +308,7 @@ func Decode(c net.Conn) error {
 			if err != nil {
 				log.Fatal("failed to generate JSON")
 			} else {
+<<<<<<< HEAD
 				// Throttle messages at different intervals when the heat pump is running or on stand by
 				// to contain real time network traffic destined to web and phone apps.
 				// Message throttling is disabled in case the payload contains errors.
@@ -322,6 +323,15 @@ func Decode(c net.Conn) error {
 					} else {
 						standbySeconds = base.StandbyThrottleSeconds
 					}
+=======
+				// Throttle messages at different intervals when the heat pump is running and or stand by
+				// to contain real time network traffic destined to web and phone apps
+				var standbySeconds float64
+				if vitocal.Status == domain.ON || vitocal.PumpStatus == domain.ON {
+					standbySeconds = base.RunningThrottleSeconds
+				} else {
+					standbySeconds = base.StandbyThrottleSeconds
+>>>>>>> 4a772e74960e101daf0da29c3b1119178b31831f
 				}
 				// Throttle down to 1 message every standbySeconds
 				if vitocal.Timestamp.Sub(lastTime).Seconds() > standbySeconds {
