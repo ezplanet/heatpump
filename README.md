@@ -72,6 +72,7 @@ This service reads the modbus data stream from the heat pump and encodes it into
         "error_5":0
     }
 ```
-
+#### Notes
+Repositories: github.com and local gitea
 
 
