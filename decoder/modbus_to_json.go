@@ -29,15 +29,16 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"heatpump/base"
-	"heatpump/domain"
-	"heatpump/mqtt"
 	"io"
 	"log"
 	"net"
 	"os"
 	"os/exec"
 	"time"
+
+	"heatpump/base"
+	"heatpump/domain"
+	"heatpump/mqtt"
 )
 
 const (
@@ -86,6 +87,7 @@ const (
 	VITOCAL_STATUS_ON     string = "VitocalStatusOn"
 	VITOCAL_COMPRESSOR_ON string = "VitocalCompressorOn"
 	VITOCAL_MODE_COOL     string = "VitocalModeCool"
+	VITOCAL_DEFROST       string = "VitocalDefrost"
 )
 
 var (
@@ -94,6 +96,7 @@ var (
 	vitocalStatus     uint8 = 0xFF
 	vitocalCompressor uint8 = 0xFF
 	vitocalModeCool   uint8 = 0xFF
+	vitocalDefrost    uint8 = 0xFF
 )
 
 func Decode(c net.Conn) error {
@@ -119,7 +122,7 @@ func Decode(c net.Conn) error {
 				if vitocalPowered >= 1 {
 					cmd := exec.Command("/bin/rm", "-f", base.BaseSHM+VITOCAL_POWERED,
 						base.BaseSHM+VITOCAL_STATUS_ON, base.BaseSHM+VITOCAL_PUMP_ON, base.BaseSHM+VITOCAL_COMPRESSOR_ON,
-						base.BaseSHM+VITOCAL_MODE_COOL)
+						base.BaseSHM+VITOCAL_MODE_COOL, base.BaseSHM+VITOCAL_DEFROST)
 					err := cmd.Run()
 					if err != nil {
 						log.Printf("error removing vitocal state files: %s\n", err)
@@ -205,12 +208,16 @@ func Decode(c net.Conn) error {
 				}
 
 				// DEFROST
-				if buf[3]&STATUS_DEFROST_STARTING == STATUS_DEFROST_STARTING {
+				switch buf[3] {
+				case STATUS_DEFROST_STARTING:
 					vitocal.Defrost = domain.DEFROST_STARTING
-				} else if buf[3]&STATUS_DEFROST_ACTIVE == STATUS_DEFROST_ACTIVE {
+					vitocalModeCool = setVitocalStateOn(vitocalDefrost, VITOCAL_DEFROST)
+				case STATUS_DEFROST_ACTIVE:
 					vitocal.Defrost = domain.DEFROST_ACTIVE
-				} else {
+					vitocalModeCool = setVitocalStateOn(vitocalDefrost, VITOCAL_DEFROST)
+				default:
 					vitocal.Defrost = domain.DEFROST_INACTIVE
+					vitocalModeCool = setVitocalStateOff(vitocalDefrost, VITOCAL_DEFROST)
 				}
 				// ToDo CONTROL_MODE_HEAT and CONTROL_MODE_COOL have same value, need to manage difference in app
 				switch buf[4] {
