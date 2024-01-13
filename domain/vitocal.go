@@ -26,8 +26,9 @@
 package domain
 
 import (
-	"heatpump/domain/vitocal"
 	"time"
+
+	"heatpump/domain/vitocal"
 )
 
 const (
@@ -63,6 +64,7 @@ type Vitocal struct {
 	Temperatures         vitocal.Temperatures `json:"temperatures"`
 	PressureSuction      int                  `json:"pressure_suction"`
 	PressureCondensation int                  `json:"pressure_condensation"`
-	Hours                int                  `json:"hours"`
+	MachineHours         int                  `json:"machine_hours"`
+	CompressorHours      int                  `json:"compressor_hours"`
 	Errors               vitocal.Errors       `json:"errors"`
 }

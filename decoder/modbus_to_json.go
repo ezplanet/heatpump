@@ -157,6 +157,13 @@ func Decode(c net.Conn) error {
 			if size == 105 && buf[2] == 100 && (template&TEMPERATURES) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
+
+				values := "TEMPERATURES: "
+				for i := 0; i < len(value); i++ {
+					values = fmt.Sprintf("%s %5d ", values, value[i])
+				}
+				log.Println(values)
+
 				temperatureIn := float32(value[1]) / 10
 				temperatureOut := float32(value[2]) / 10
 				temperatureExt := float32(value[29]) / 10
@@ -188,6 +195,13 @@ func Decode(c net.Conn) error {
 			if size == 27 && buf[2] == 22 && (template&STATES) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
+
+				values := "STATES: "
+				for i := 0; i < len(value); i++ {
+					values = fmt.Sprintf("%s %5d ", values, value[i])
+				}
+				log.Println(values)
+
 				// if bit 2 = 0 standby otherwise on
 				if buf[3]&STATUS_STANDBY == 0 {
 					vitocal.Status = domain.ON
@@ -232,7 +246,7 @@ func Decode(c net.Conn) error {
 				vitocal.CompressorHz = int(value[5])
 				vitocal.FanSpeed = int(value[6])
 				vitocal.PumpSpeed = int(value[7])
-				vitocal.Hours = int(value[8])
+				vitocal.PumpHours = int(value[8])
 				states = fmt.Sprintf("%04x %04x %04x", value[0], value[1], value[2])
 				for i := 3; i < len(value)-2; i++ {
 					states = fmt.Sprintf("%s %5d ", states, value[i])
@@ -245,6 +259,12 @@ func Decode(c net.Conn) error {
 			if size == 11 && buf[2] == 6 && (template&MACHINE) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
+
+				values := "MACHINE: "
+				for i := 0; i < len(value); i++ {
+					values = fmt.Sprintf("%s %5d ", values, value[i])
+				}
+				log.Println(values)
 
 				if buf[3]&ON == 0 {
 					if vitocal.CompressorRequired {
