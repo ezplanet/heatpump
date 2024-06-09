@@ -30,11 +30,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"os/exec"
 	"time"
+
+	logger "playground/log"
 
 	"heatpump/base"
 	"heatpump/domain"
@@ -126,7 +127,7 @@ func Decode(c net.Conn) error {
 						base.BaseSHM+VITOCAL_MODE_COOL, base.BaseSHM+VITOCAL_DEFROST)
 					err := cmd.Run()
 					if err != nil {
-						log.Printf("error removing vitocal state files: %s\n", err)
+						logger.Log.Error().Msgf("error removing vitocal state files: %s\n", err)
 					} else {
 						vitocalPowered = OFF
 						vitocalStatus = OFF
@@ -138,7 +139,7 @@ func Decode(c net.Conn) error {
 				continue
 			}
 			if err != io.EOF {
-				log.Println("error reading MODBUS stream", err)
+				logger.Log.Error().Msgf("error reading MODBUS stream", err)
 				return err
 			}
 		}
@@ -151,8 +152,7 @@ func Decode(c net.Conn) error {
 		if size > 2 && int(buf[2]) == (size-5) && int(buf[0]) == base.VitocalModbusAddr && uint8(buf[1]) == MODBUS_READ {
 			checksum := crc16(buf, size)
 			if checksum[0] != buf[size-2] || checksum[1] != buf[size-1] {
-				fmt.Println("CRC ERROR")
-				fmt.Println(size, buf[2], checksum, buf[size-2], buf[size-1], buf)
+				logger.Log.Warn().Msgf("CRC ERROR decoding data stream: [%d, %02x, %04x, %02x, %02x, %v]", size, buf[2], checksum, buf[size-2], buf[size-1], buf)
 				continue
 			}
 			//fmt.Println(size, buf[2], checksum, buf[size-2], buf[size-1], buf)
@@ -314,7 +314,7 @@ func Decode(c net.Conn) error {
 			vitocal.Timestamp = time.Now()
 			linearJSON, err := json.Marshal(vitocal)
 			if err != nil {
-				log.Fatal("failed to generate JSON")
+				logger.Log.Fatal().Msg("failed to generate JSON")
 			} else {
 				// Throttle messages at different intervals when the heat pump is running or on stand by
 				// to contain real time network traffic destined to web and phone apps.
@@ -333,13 +333,13 @@ func Decode(c net.Conn) error {
 				}
 				// Throttle down to 1 message every standbySeconds
 				if vitocal.Timestamp.Sub(lastTime).Seconds() > standbySeconds {
-					log.Printf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
+					logger.Log.Info().Msgf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
 					if base.RawLog {
-						fmt.Printf("%s  %s\n", vitocal.Timestamp.Format("2006/01/02 15:04:05"), raw_temperatures)
+						logger.Log.Trace().Msg(raw_temperatures)
 					}
 					err := mqtt.Publish(base.MqttTopic, true, string(linearJSON))
 					if err != nil {
-						log.Print("MQTT publish Error: ", err)
+						logger.Log.Error().Msgf("error sending data to MQTT server: %s", err.Error())
 					}
 					lastTime = vitocal.Timestamp
 				}
@@ -358,7 +358,7 @@ func setVitocalStateOn(state uint8, file string) uint8 {
 	if state == OFF || state == 0xFF {
 		_, err := os.Create(base.BaseSHM + file)
 		if err != nil {
-			fmt.Println("Error creating file: ", base.BaseSHM+file)
+			logger.Log.Error().Msgf("error creating status file: ", base.BaseSHM+file)
 			return state
 		} else {
 			return ON
@@ -373,7 +373,7 @@ func setVitocalStateOff(state uint8, file string) uint8 {
 		cmd := exec.Command("/bin/rm", "-f", base.BaseSHM+file)
 		err := cmd.Run()
 		if err != nil {
-			fmt.Printf("Error removing vitocal state file %s: %s\n", file, err)
+			logger.Log.Error().Msgf("error removing status file %s: %s\n", file, err)
 			return state
 		} else {
 			return OFF

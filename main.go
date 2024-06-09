@@ -26,25 +26,30 @@
 package main
 
 import (
-	"heatpump/base"
-	"heatpump/decoder"
 	"io"
-	"log"
 	"net"
 	"time"
+
+	"heatpump/base"
+	"heatpump/decoder"
+	"heatpump/logger"
 )
 
 // Connects to the heatpump modbus service and then hands the connection to the decoder
 // Retries the connection in case of error up to the defined timeout
 func main() {
+	err := logger.Init(base.LogLevel, base.LogFile)
+	if err != nil {
+		panic(err)
+	}
 	var errorCount int = 0
 	for {
 		conn, err := net.Dial("tcp", base.VitocalModbusTcp)
 		if err != nil {
 			errorCount++
-			log.Printf("error: '%s' trying to connect to: '%s'\n", err, base.VitocalModbusTcp)
+			logger.Log.Error().Msgf("error: '%s' trying to connect to: '%s'\n", err.Error(), base.VitocalModbusTcp)
 			if errorCount > base.ModbusConnectionTimeoutMinutes {
-				log.Fatalf("failed to connect to %s for %d minutes\n", base.VitocalModbusTcp,
+				logger.Log.Fatal().Msgf("failed to connect to %s for %d minutes\n", base.VitocalModbusTcp,
 					base.ModbusConnectionTimeoutMinutes)
 				break
 			} else {
@@ -53,12 +58,13 @@ func main() {
 			}
 		}
 		errorCount = 0
+		logger.Log.Trace().Msg("now decoding data stream...")
 		err = decoder.Decode(conn)
 		if err == io.EOF {
-			log.Fatalf("end of data from %s", base.VitocalModbusTcp)
+			logger.Log.Fatal().Msgf("end of data from %s", base.VitocalModbusTcp)
 			break
 		} else {
-			log.Println("error:", err)
+			logger.Log.Error().Msgf("error: %s", err.Error())
 		}
 		conn.Close()
 	}
