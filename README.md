@@ -1,4 +1,4 @@
-# Viessman Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx, Maxa i-32V6 - Heatpump Telemetry
+# Viessman Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx, Maxa i-32V5 - Heatpump Telemetry
 
 ## Purpose
 Heatpump telemetry for makes/models: Viessmann Vitocal 100A, Rinnai Shimanto, Thermocold MEX Vsx, Maxa i-32V5 series is decoded to json and posted to a mosquitto topic

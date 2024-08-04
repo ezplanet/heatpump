@@ -26,13 +26,24 @@
 package base
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
+	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 const (
+	environmentKey     string = "ENVIRONMENT"
+	environmentDefault string = "e0"
+
+	loglevelKey     string = "LOG_LEVEL"
+	logLevelDefault string = "info"
+
+	logFileKey     string = "LOG_FILE"
+	logFileDefault string = "stderr"
+
 	mqttServerKey     string = "MQTT_SERVER"
 	mqttServerDefault string = "ssl://lambo.ezplanet.org:8883"
 
@@ -65,6 +76,9 @@ const (
 )
 
 var (
+	Environment                    string
+	LogLevel                       string
+	LogFile                        string
 	MqttServer                     string
 	MqttClientId                   string
 	MqttTopic                      string
@@ -83,6 +97,21 @@ func init() {
 	err = godotenv.Load() //Load .env file
 	if err != nil {
 		log.Print(err)
+	}
+
+	Environment = os.Getenv(environmentKey)
+	if len(Environment) <= 0 {
+		Environment = environmentDefault
+	}
+
+	LogLevel = strings.ToLower(os.Getenv(loglevelKey))
+	if len(LogLevel) <= 0 {
+		LogLevel = logLevelDefault
+	}
+
+	LogFile = strings.ToLower(os.Getenv(logFileKey))
+	if len(LogFile) <= 0 {
+		LogFile = logFileDefault
 	}
 
 	MqttServer = os.Getenv(mqttServerKey)
