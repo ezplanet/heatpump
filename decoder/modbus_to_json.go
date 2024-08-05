@@ -62,7 +62,7 @@ const (
 	CIRCULATION_PUMP_ON byte = 0x40
 	// byte 7 and 8
 	COMPRESSOR_ACTIVE        uint16 = 0x8000
-	CIRCULATION_PUMP_ACTIVE  uint16 = 0x0601
+	CIRCULATION_PUMP_ACTIVE  uint16 = 0x0600
 	CIRCULATION_PUMP_VENTING uint16 = 0x0200
 
 	//STATUS
@@ -269,9 +269,9 @@ func Decode(c net.Conn) error {
 					}
 				}
 				if buf[3]&COMPRESSOR_OIL_HEATER == COMPRESSOR_OIL_HEATER {
-					vitocal.OilHeater = domain.ON
+					vitocal.CrankcaseHeater = domain.ON
 				} else {
-					vitocal.OilHeater = domain.OFF
+					vitocal.CrankcaseHeater = domain.OFF
 				}
 				if buf[4]&COMPRESSOR_THRUST == COMPRESSOR_THRUST {
 					vitocal.CompressorThrust = domain.ON
@@ -282,8 +282,13 @@ func Decode(c net.Conn) error {
 					vitocal.PumpStatus = domain.ON
 					vitocalPump = setVitocalStateOn(vitocalPump, VITOCAL_PUMP_ON)
 				} else {
-					vitocal.PumpStatus = domain.OFF
-					vitocalPump = setVitocalStateOff(vitocalPump, VITOCAL_PUMP_ON)
+					if value[2]&CIRCULATION_PUMP_VENTING == CIRCULATION_PUMP_VENTING {
+						vitocal.PumpStatus = domain.WATER_PUMP_VENTING
+						vitocalPump = setVitocalStateOn(vitocalPump, VITOCAL_PUMP_ON)
+					} else {
+						vitocal.PumpStatus = domain.OFF
+						vitocalPump = setVitocalStateOff(vitocalPump, VITOCAL_PUMP_ON)
+					}
 				}
 				for i := 0; i < len(value); i++ {
 					machine = fmt.Sprintf("%s %04x", machine, value[i])
