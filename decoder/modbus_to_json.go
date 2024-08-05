@@ -337,7 +337,7 @@ func Decode(c net.Conn) error {
 				}
 				// Throttle down to 1 message every standbySeconds
 				if vitocal.Timestamp.Sub(lastTime).Seconds() > standbySeconds {
-					logger.Log.Info().Msgf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
+					logger.Log.Info().Msgf("%s - %s - %s -%s", machine, states, temperatures, errors)
 					if base.RawLog {
 						logger.Log.Trace().Msg(raw_temperatures)
 					}
