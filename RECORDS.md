@@ -81,7 +81,7 @@ bitmap:
 ```
 X X X X X X X X
   |     | |   |
-  |     | |   + Compressor starting
+  |     | |   + Compressor starting/ready
   |     | +- Compressor running
   |     +- Thrust (getting to temperature)  
   +- Circulation Pump ON
