@@ -81,28 +81,22 @@ bitmap:
 ```
 X X X X X X X X
   |     | |   |
-  |     | |   + Compressor starting
+  |     | |   + Compressor starting/ready
   |     | +- Compressor running
   |     +- Thrust (getting to temperature)  
   +- Circulation Pump ON
 ```
-Byte 7 -
-Circulation Pump: 0x0000 = OFF; 0x0200 = VENTING; 0x0601 = ON;
+Byte 7 and 8 -
+Machine Active: 0x0000 = OFF; 0x0001 = ON
+Circulation Pump: 0x0000 = OFF; 0x0200 = VENTING; 0x0600 = ON;
 Compressor: 0x0000 = OFF; 0x8000 = ON
 bitmap:
 ```
-X X X X X X X X 
-| | |         
-| | |      
-| | +--- Circulation Pump ON
-|  +--- Machine Active
+X X X X  X X X X  X X X X  X X X X
+|          | |                   |        
+|          | |                   +--- Machine Active
+|          | +--- Circulation Pump ON
+|          +--- Machine Active
 +--- Compressor ON  
-```
-Byte 8 -
-bitmap:
-```
-X X X X X X X X 
-              |
-              + Machine Active
 ```
 #### ERRORS

@@ -62,7 +62,7 @@ const (
 	CIRCULATION_PUMP_ON byte = 0x40
 	// byte 7 and 8
 	COMPRESSOR_ACTIVE        uint16 = 0x8000
-	CIRCULATION_PUMP_ACTIVE  uint16 = 0x0601
+	CIRCULATION_PUMP_ACTIVE  uint16 = 0x0600
 	CIRCULATION_PUMP_VENTING uint16 = 0x0200
 
 	//STATUS
@@ -160,22 +160,22 @@ func Decode(c net.Conn) error {
 			if size == 105 && buf[2] == 100 && (template&TEMPERATURES) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
-				temperatureIn := float32(value[1]) / 10
-				temperatureOut := float32(value[2]) / 10
-				temperatureExt := float32(value[29]) / 10
-				ingressoComp := float32(value[23]) / 10
-				scaricoComp := float32(value[34]) / 10
+				temperatureWaterIn := float32(int16(value[1])) / 10
+				temperatureWaterOut := float32(int16(value[2])) / 10
+				temperatureExternal := float32(int16(value[29])) / 10
+				temperatureCompIn := float32(int16(value[23])) / 10
+				temperatureCompOut := float32(int16(value[34])) / 10
 				suctionPressure := float32(value[15]) / 100
 				condensationPressure := float32(value[7]) / 100
-				vitocal.Temperatures.WaterIn = fmt.Sprintf("%.1f", float32(int16(value[1]))/10)
-				vitocal.Temperatures.WaterOut = fmt.Sprintf("%.1f", float32(int16(value[2]))/10)
-				vitocal.Temperatures.External = fmt.Sprintf("%.1f", float32(int16(value[29]))/10)
-				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", float32(int16(value[23]))/10)
-				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", float32(int16(value[34]))/10)
+				vitocal.Temperatures.WaterIn = fmt.Sprintf("%.1f", temperatureWaterIn)
+				vitocal.Temperatures.WaterOut = fmt.Sprintf("%.1f", temperatureWaterOut)
+				vitocal.Temperatures.External = fmt.Sprintf("%.1f", temperatureExternal)
+				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", temperatureCompIn)
+				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", temperatureCompOut)
 				vitocal.PressureCondensation = int(value[7])
 				vitocal.PressureSuction = int(value[15])
 				temperatures = fmt.Sprintf("Temp: wtr_in=%.1f wtr_out=%.1f ext=%.1f cmp_in=%.1f cmp_out=%.1f - Press: suct=%.2f cond=%.2f",
-					temperatureIn, temperatureOut, temperatureExt, ingressoComp, scaricoComp,
+					temperatureWaterIn, temperatureWaterOut, temperatureExternal, temperatureCompIn, temperatureCompOut,
 					suctionPressure, condensationPressure)
 
 				if base.RawLog {
@@ -269,9 +269,9 @@ func Decode(c net.Conn) error {
 					}
 				}
 				if buf[3]&COMPRESSOR_OIL_HEATER == COMPRESSOR_OIL_HEATER {
-					vitocal.OilHeater = domain.ON
+					vitocal.CrankcaseHeater = domain.ON
 				} else {
-					vitocal.OilHeater = domain.OFF
+					vitocal.CrankcaseHeater = domain.OFF
 				}
 				if buf[4]&COMPRESSOR_THRUST == COMPRESSOR_THRUST {
 					vitocal.CompressorThrust = domain.ON
@@ -282,8 +282,13 @@ func Decode(c net.Conn) error {
 					vitocal.PumpStatus = domain.ON
 					vitocalPump = setVitocalStateOn(vitocalPump, VITOCAL_PUMP_ON)
 				} else {
-					vitocal.PumpStatus = domain.OFF
-					vitocalPump = setVitocalStateOff(vitocalPump, VITOCAL_PUMP_ON)
+					if value[2]&CIRCULATION_PUMP_VENTING == CIRCULATION_PUMP_VENTING {
+						vitocal.PumpStatus = domain.WATER_PUMP_VENTING
+						vitocalPump = setVitocalStateOn(vitocalPump, VITOCAL_PUMP_ON)
+					} else {
+						vitocal.PumpStatus = domain.OFF
+						vitocalPump = setVitocalStateOff(vitocalPump, VITOCAL_PUMP_ON)
+					}
 				}
 				for i := 0; i < len(value); i++ {
 					machine = fmt.Sprintf("%s %04x", machine, value[i])
@@ -332,7 +337,7 @@ func Decode(c net.Conn) error {
 				}
 				// Throttle down to 1 message every standbySeconds
 				if vitocal.Timestamp.Sub(lastTime).Seconds() > standbySeconds {
-					logger.Log.Info().Msgf("%s - %s - %s -%s\n", machine, states, temperatures, errors)
+					logger.Log.Info().Msgf("%s - %s - %s -%s", machine, states, temperatures, errors)
 					if base.RawLog {
 						logger.Log.Trace().Msg(raw_temperatures)
 					}

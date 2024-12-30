@@ -182,9 +182,9 @@ func init() {
 		if err != nil {
 			BaseSHM = baseSHMDefault
 		}
-		if BaseSHM[len(BaseSHM)-1:] != "/" {
-			BaseSHM = BaseSHM + "/"
-		}
+	}
+	if BaseSHM[len(BaseSHM)-1:] != "/" {
+		BaseSHM = BaseSHM + "/"
 	}
 
 	if len(os.Getenv(rawLogKey)) == 0 {
