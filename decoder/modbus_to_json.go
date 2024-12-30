@@ -160,22 +160,22 @@ func Decode(c net.Conn) error {
 			if size == 105 && buf[2] == 100 && (template&TEMPERATURES) == 0 {
 				dataSize := int(buf[2])
 				value := getValues(buf, dataSize)
-				temperatureIn := float32(value[1]) / 10
-				temperatureOut := float32(value[2]) / 10
-				temperatureExt := float32(value[29]) / 10
-				ingressoComp := float32(value[23]) / 10
-				scaricoComp := float32(value[34]) / 10
+				temperatureWaterIn := float32(int16(value[1])) / 10
+				temperatureWaterOut := float32(int16(value[2])) / 10
+				temperatureExternal := float32(int16(value[29])) / 10
+				temperatureCompIn := float32(int16(value[23])) / 10
+				temperatureCompOut := float32(int16(value[34])) / 10
 				suctionPressure := float32(value[15]) / 100
 				condensationPressure := float32(value[7]) / 100
-				vitocal.Temperatures.WaterIn = fmt.Sprintf("%.1f", float32(int16(value[1]))/10)
-				vitocal.Temperatures.WaterOut = fmt.Sprintf("%.1f", float32(int16(value[2]))/10)
-				vitocal.Temperatures.External = fmt.Sprintf("%.1f", float32(int16(value[29]))/10)
-				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", float32(int16(value[23]))/10)
-				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", float32(int16(value[34]))/10)
+				vitocal.Temperatures.WaterIn = fmt.Sprintf("%.1f", temperatureWaterIn)
+				vitocal.Temperatures.WaterOut = fmt.Sprintf("%.1f", temperatureWaterOut)
+				vitocal.Temperatures.External = fmt.Sprintf("%.1f", temperatureExternal)
+				vitocal.Temperatures.CompressorIn = fmt.Sprintf("%.1f", temperatureCompIn)
+				vitocal.Temperatures.CompressorOut = fmt.Sprintf("%.1f", temperatureCompOut)
 				vitocal.PressureCondensation = int(value[7])
 				vitocal.PressureSuction = int(value[15])
 				temperatures = fmt.Sprintf("Temp: wtr_in=%.1f wtr_out=%.1f ext=%.1f cmp_in=%.1f cmp_out=%.1f - Press: suct=%.2f cond=%.2f",
-					temperatureIn, temperatureOut, temperatureExt, ingressoComp, scaricoComp,
+					temperatureWaterIn, temperatureWaterOut, temperatureExternal, temperatureCompIn, temperatureCompOut,
 					suctionPressure, condensationPressure)
 
 				if base.RawLog {
