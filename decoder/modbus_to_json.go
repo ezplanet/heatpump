@@ -54,7 +54,7 @@ const (
 
 	//MACHINE
 	// byte 1
-	COMPRESSOR_OIL_HEATER byte = 0x80
+	CRANKCASE_HEATER byte = 0x80
 	// byte 2
 	COMPRESSOR_STARTING byte = 0x01
 	COMPRESSOR_RUNNING  byte = 0x04
@@ -268,7 +268,7 @@ func Decode(c net.Conn) error {
 						vitocal.CompressorStatus = domain.ON
 					}
 				}
-				if buf[3]&COMPRESSOR_OIL_HEATER == COMPRESSOR_OIL_HEATER {
+				if buf[3]&CRANKCASE_HEATER == CRANKCASE_HEATER {
 					vitocal.CrankcaseHeater = domain.ON
 				} else {
 					vitocal.CrankcaseHeater = domain.OFF
