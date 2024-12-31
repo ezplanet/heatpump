@@ -66,7 +66,7 @@ Record Size = 11 - Values Size = 6
              +--- Circulation Pump + Compressor status           
 ```
 Byte 3 -
-Compressor status: 0x00 = OFF; 0x01 = RUNNING; 0x10 = ALWAYS; 0x80 OIL HEATER ON
+Compressor status: 0x00 = OFF; 0x01 = RUNNING; 0x10 = ALWAYS; 0x80 CRANKCASE HEATER ON
 bitmap:
 ```
 X X X X X X X X
