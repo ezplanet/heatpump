@@ -31,14 +31,14 @@ Record Size = 27 - Values Size = 22
 01 03 22 
 ```
 Byte 3 -
-Compressor Status: 0x10 = REQUIRED; 0x02 = STANDBY; 0x30 = DEFROST STARTING; 0x50 DEFROST ACTIVE
+Compressor Status: 0x02 = STANDBY; 0x10 = REQUIRED; 0x30 = DEFROST STARTING; 0x50 DEFROST ACTIVE
 bitmap:
 ```
 X X X X X X X X
   | | |     | |      
   | | |     | +- 0 = OFF; 1 = Auto
-  | | |     +- 0 = Compressor required; 1 = Compressor OFF
-  | | +- 1 = Compressor off
+  | | |     +- 0 = Compressor required; 1 = Standby
+  | | +- 0 Compressor OFF; 1 = Compressor Required
   | +- 1 = Defrost starting
   +- 1 = Defrost Active
 ```
