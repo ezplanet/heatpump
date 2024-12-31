@@ -208,17 +208,17 @@ func Decode(c net.Conn) error {
 				}
 
 				// DEFROST
-				switch buf[3] {
-				case STATUS_DEFROST_STARTING:
+				if buf[3]&STATUS_DEFROST_STARTING == STATUS_DEFROST_STARTING {
 					vitocal.Defrost = domain.DEFROST_STARTING
-					vitocalModeCool = setVitocalStateOn(vitocalDefrost, VITOCAL_DEFROST)
-				case STATUS_DEFROST_ACTIVE:
+					vitocalDefrost = setVitocalStateOn(vitocalDefrost, VITOCAL_DEFROST)
+				} else if buf[3]&STATUS_DEFROST_ACTIVE == STATUS_DEFROST_ACTIVE {
 					vitocal.Defrost = domain.DEFROST_ACTIVE
-					vitocalModeCool = setVitocalStateOn(vitocalDefrost, VITOCAL_DEFROST)
-				default:
+					vitocalDefrost = setVitocalStateOn(vitocalDefrost, VITOCAL_DEFROST)
+				} else {
 					vitocal.Defrost = domain.DEFROST_INACTIVE
-					vitocalModeCool = setVitocalStateOff(vitocalDefrost, VITOCAL_DEFROST)
+					vitocalDefrost = setVitocalStateOff(vitocalDefrost, VITOCAL_DEFROST)
 				}
+
 				// ToDo CONTROL_MODE_HEAT and CONTROL_MODE_COOL have same value, need to manage difference in app
 				switch buf[4] {
 				case VITOCAL_OFF:
